@@ -1,3 +1,14 @@
-作业要求.txt
+﻿作业要求.txt
 *.zip
 report.pdf
+main.tex
+main.tex.orig
+main.pdf
+*.aux
+*.log
+*.toc
+*.out
+*.fls
+*.fdb_latexmk
+*.synctex.gz
+*.xdv
