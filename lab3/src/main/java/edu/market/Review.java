@@ -11,6 +11,18 @@ import java.time.Instant;
 @Entity
 @Table(uniqueConstraints = @UniqueConstraint(columnNames = {"orderId", "authorId"}))
 public class Review {
+    @jakarta.persistence.ManyToOne(fetch = jakarta.persistence.FetchType.LAZY)
+    @jakarta.persistence.JoinColumn(name = "authorId", insertable = false, updatable = false)
+    private Account authorIdReference;
+    @jakarta.persistence.ManyToOne(fetch = jakarta.persistence.FetchType.LAZY)
+    @jakarta.persistence.JoinColumn(name = "recipientId", insertable = false, updatable = false)
+    private Account recipientIdReference;
+    @jakarta.persistence.ManyToOne(fetch = jakarta.persistence.FetchType.LAZY)
+    @jakarta.persistence.JoinColumn(name = "productId", insertable = false, updatable = false)
+    private Product productIdReference;
+    @jakarta.persistence.ManyToOne(fetch = jakarta.persistence.FetchType.LAZY)
+    @jakarta.persistence.JoinColumn(name = "orderId", insertable = false, updatable = false)
+    private PurchaseOrder orderIdReference;
     @Id
     @GeneratedValue
     private Long id;

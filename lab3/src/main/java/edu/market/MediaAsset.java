@@ -11,6 +11,9 @@ import java.math.BigDecimal;
 @Entity
 
 public class MediaAsset {
+    @jakarta.persistence.ManyToOne(fetch = jakarta.persistence.FetchType.LAZY)
+    @jakarta.persistence.JoinColumn(name = "ownerId", insertable = false, updatable = false)
+    private Account ownerIdReference;
     @Id
     @GeneratedValue
     private Long id;

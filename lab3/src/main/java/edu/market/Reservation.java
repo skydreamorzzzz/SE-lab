@@ -7,7 +7,14 @@ import jakarta.persistence.Column;
 import java.time.Instant;
 
 @Entity
+@jakarta.persistence.Table(indexes = {@jakarta.persistence.Index(name = "idx_reservation_queue", columnList = "productId,cancelled,confirmed,id")})
 public class Reservation {
+    @jakarta.persistence.ManyToOne(fetch = jakarta.persistence.FetchType.LAZY)
+    @jakarta.persistence.JoinColumn(name = "buyerId", insertable = false, updatable = false)
+    private Account buyerIdReference;
+    @jakarta.persistence.ManyToOne(fetch = jakarta.persistence.FetchType.LAZY)
+    @jakarta.persistence.JoinColumn(name = "productId", insertable = false, updatable = false)
+    private Product productIdReference;
     @Id
     @GeneratedValue
     private Long id;

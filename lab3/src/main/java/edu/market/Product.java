@@ -9,6 +9,7 @@ import jakarta.persistence.Enumerated;
 import jakarta.persistence.EnumType;
 
 @Entity
+@jakarta.persistence.Table(indexes = {@jakarta.persistence.Index(name = "idx_product_visible", columnList = "status,publishedAt,id"), @jakarta.persistence.Index(name = "idx_product_seller", columnList = "sellerId"), @jakarta.persistence.Index(name = "idx_product_category", columnList = "category,status")})
 public class Product {
     @Column(nullable = false, columnDefinition = "boolean default false")
     private boolean negotiable;
@@ -34,6 +35,9 @@ public class Product {
     private String shippingAddress;
     @Column(nullable = false, columnDefinition = "boolean default false")
     private boolean returnSupported;
+    @jakarta.persistence.ManyToOne(fetch = jakarta.persistence.FetchType.LAZY)
+    @jakarta.persistence.JoinColumn(name = "sellerId", insertable = false, updatable = false)
+    private Account sellerIdReference;
     @Id
     @GeneratedValue
     private Long id;

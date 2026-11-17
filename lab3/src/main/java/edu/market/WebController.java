@@ -23,10 +23,11 @@ public class WebController {
     private final ReviewRepository reviews;
     private final ReviewService reviewService;
     private final PersonalService personal;
+    private final FinanceService finance;
 
     public WebController(AccountService accounts, ProductService products, ProductRepository productStore,
                          TradingService trading, PurchaseOrderRepository orders, ReservationRepository reservations,
-                         ReviewRepository reviews, ReviewService reviewService, PersonalService personal) {
+                         ReviewRepository reviews, ReviewService reviewService, PersonalService personal, FinanceService finance) {
         this.accounts = accounts;
         this.products = products;
         this.productStore = productStore;
@@ -36,6 +37,7 @@ public class WebController {
         this.reviews = reviews;
         this.reviewService = reviewService;
         this.personal = personal;
+        this.finance = finance;
     }
 
     @ModelAttribute
@@ -100,6 +102,7 @@ public class WebController {
         model.addAttribute("product", product);
         model.addAttribute("reviews", reviews.findByProductIdOrderByIdDesc(id));
         model.addAttribute("requestKey", UUID.randomUUID().toString());
+        model.addAttribute("actualPrice", product.getMinPrice() == null ? null : finance.price(product.getMinPrice()));
         return "detail";
     }
 

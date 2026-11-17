@@ -9,8 +9,12 @@ import java.time.LocalDate;
 import java.math.BigDecimal;
 
 @Entity
+@jakarta.persistence.Table(indexes = {@jakarta.persistence.Index(name = "idx_refund_timeout", columnList = "status,createdAt")})
 
 public class RefundRequest {
+    @jakarta.persistence.ManyToOne(fetch = jakarta.persistence.FetchType.LAZY)
+    @jakarta.persistence.JoinColumn(name = "orderId", insertable = false, updatable = false)
+    private PurchaseOrder orderIdReference;
     @Id
     @GeneratedValue
     private Long id;

@@ -9,8 +9,21 @@ import java.time.LocalDate;
 import java.math.BigDecimal;
 
 @Entity
+@jakarta.persistence.Table(indexes = {@jakarta.persistence.Index(name = "idx_bargain_expiry", columnList = "status,expiresAt")})
 
 public class Bargain {
+    @jakarta.persistence.ManyToOne(fetch = jakarta.persistence.FetchType.LAZY)
+    @jakarta.persistence.JoinColumn(name = "buyerId", insertable = false, updatable = false)
+    private Account buyerIdReference;
+    @jakarta.persistence.ManyToOne(fetch = jakarta.persistence.FetchType.LAZY)
+    @jakarta.persistence.JoinColumn(name = "sellerId", insertable = false, updatable = false)
+    private Account sellerIdReference;
+    @jakarta.persistence.ManyToOne(fetch = jakarta.persistence.FetchType.LAZY)
+    @jakarta.persistence.JoinColumn(name = "productId", insertable = false, updatable = false)
+    private Product productIdReference;
+    @jakarta.persistence.ManyToOne(fetch = jakarta.persistence.FetchType.LAZY)
+    @jakarta.persistence.JoinColumn(name = "orderId", insertable = false, updatable = false)
+    private PurchaseOrder orderIdReference;
     @Id
     @GeneratedValue
     private Long id;

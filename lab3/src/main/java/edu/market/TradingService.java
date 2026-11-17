@@ -49,7 +49,7 @@ public class TradingService {
         BusinessException.require(!products.sellerBanned(product), "卖家已封禁");
         BusinessException.require(product.getStatus() == ProductStatus.ON_SALE, "商品不可购买，请刷新");
         BusinessException.require(quantity > 0 && quantity <= product.getStock(), "库存不足或数量无效");
-        BusinessException.require(displayedPrice != null && displayedPrice.compareTo(product.getMinPrice()) == 0,
+        BusinessException.require(displayedPrice != null && displayedPrice.compareTo(finance.price(product.getMinPrice())) == 0,
                 "商品价格已变化，请刷新后下单");
         requireAddress(buyer);
         product.setStock(product.getStock() - quantity);
@@ -163,6 +163,7 @@ public class TradingService {
                 BusinessException.require(isBuyer, "仅买家可确认收货");
                 state(order, OrderStatus.SHIPPED);
                 product.setSoldQuantity(product.getSoldQuantity() + order.getQuantity());
+                order.setCompletedAt(Instant.now());
                 order.setStatus(OrderStatus.COMPLETED);
                 finance.settle(order);
             }
@@ -182,6 +183,7 @@ public class TradingService {
         if (order.getStatus() == OrderStatus.SHIPPED && order.getSignedAt() != null
                 && !order.getSignedAt().plus(Duration.ofDays(7)).isAfter(now)) {
             product.setSoldQuantity(product.getSoldQuantity() + order.getQuantity());
+                order.setCompletedAt(Instant.now());
                 order.setStatus(OrderStatus.COMPLETED);
                 finance.settle(order);
         }
@@ -211,8 +213,8 @@ public class TradingService {
         order.setBuyerId(buyer.getId());
         order.setSellerId(product.getSellerId());
         order.setQuantity(quantity);
-        order.setUnitPrice(product.getMinPrice());
-        order.setTotal(product.getMinPrice().multiply(BigDecimal.valueOf(quantity)));
+        order.setUnitPrice(finance.price(product.getMinPrice()));
+        order.setTotal(order.getUnitPrice().multiply(BigDecimal.valueOf(quantity)));
         order.setAddress(buyer.getAddress());
         order.setCreatedAt(Instant.now());
         order.setStatus(OrderStatus.PENDING_PAYMENT);

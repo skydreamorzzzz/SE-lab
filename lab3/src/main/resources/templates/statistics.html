@@ -1,0 +1,4 @@
+<!doctype html>
+<html lang="zh-CN" xmlns:th="http://www.thymeleaf.org"><head th:replace="~{fragments :: head('交易聚合统计')}"></head><body><div class="app"><header th:replace="~{fragments :: header}"></header><main class="content"><h1>交易聚合统计</h1>
+<form class="panel filters" th:action="@{/admin/statistics}" method="get"><label>开始日期<input type="date" name="from"></label><label>结束日期<input type="date" name="until"></label><button>统计</button></form><section class="panel"><p th:text="'订单样本数：' + ${summary.orderRange}"></p><p th:if="${summary.suppressed}">样本不足5笔，仅显示合并范围，金额与件数隐去。</p><p th:unless="${summary.suppressed}" th:text="'成交件数 ' + ${summary.quantity} + ' / 成交总额 ¥' + ${summary.gross}"></p></section>
+</main></div></body></html>

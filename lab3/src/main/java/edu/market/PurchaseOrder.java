@@ -10,7 +10,18 @@ import jakarta.persistence.Enumerated;
 import jakarta.persistence.EnumType;
 
 @Entity
+@jakarta.persistence.Table(indexes = {@jakarta.persistence.Index(name = "idx_order_timeout", columnList = "status,createdAt"), @jakarta.persistence.Index(name = "idx_order_buyer", columnList = "buyerId"), @jakarta.persistence.Index(name = "idx_order_seller", columnList = "sellerId"), @jakarta.persistence.Index(name = "idx_order_rank", columnList = "status,completedAt,productId")})
 public class PurchaseOrder {
+    private java.time.Instant completedAt;
+    @jakarta.persistence.ManyToOne(fetch = jakarta.persistence.FetchType.LAZY)
+    @jakarta.persistence.JoinColumn(name = "buyerId", insertable = false, updatable = false)
+    private Account buyerIdReference;
+    @jakarta.persistence.ManyToOne(fetch = jakarta.persistence.FetchType.LAZY)
+    @jakarta.persistence.JoinColumn(name = "sellerId", insertable = false, updatable = false)
+    private Account sellerIdReference;
+    @jakarta.persistence.ManyToOne(fetch = jakarta.persistence.FetchType.LAZY)
+    @jakarta.persistence.JoinColumn(name = "productId", insertable = false, updatable = false)
+    private Product productIdReference;
     @Id
     @GeneratedValue
     private Long id;
@@ -145,5 +156,13 @@ public class PurchaseOrder {
 
     public void setRequestKey(String value) {
         requestKey = value;
+    }
+
+    public java.time.Instant getCompletedAt() {
+        return completedAt;
+    }
+
+    public void setCompletedAt(java.time.Instant value) {
+        completedAt = value;
     }
 }

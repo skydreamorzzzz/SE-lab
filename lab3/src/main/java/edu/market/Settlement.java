@@ -11,9 +11,16 @@ import java.math.BigDecimal;
 @Entity
 
 public class Settlement {
+    @jakarta.persistence.ManyToOne(fetch = jakarta.persistence.FetchType.LAZY)
+    @jakarta.persistence.JoinColumn(name = "orderId", insertable = false, updatable = false)
+    private PurchaseOrder orderIdReference;
+    @jakarta.persistence.ManyToOne(fetch = jakarta.persistence.FetchType.LAZY)
+    @jakarta.persistence.JoinColumn(name = "sellerId", insertable = false, updatable = false)
+    private Account sellerIdReference;
     @Id
     @GeneratedValue
     private Long id;
+    @Column(unique = true)
     private Long orderId;
     private Long sellerId;
     private BigDecimal grossAmount;

@@ -1,0 +1,4 @@
+<!doctype html>
+<html lang="zh-CN" xmlns:th="http://www.thymeleaf.org"><head th:replace="~{fragments :: head('成交榜单')}"></head><body><div class="app"><header th:replace="~{fragments :: header}"></header><main class="content"><h1>成交榜单</h1>
+<form class="panel filters" th:action="@{/ranking}" method="get"><label>统计周期<select name="period"><option value="day">今日</option><option value="week">本周</option><option value="month">本月</option></select></label><label>分类（留空为全站）<input name="category"></label><button>查看榜单</button></form><p>按已完成订单成交件数统计，显示前20名；退款订单和未公开商品不进入榜单。</p><section class="panel" th:each="r : ${items}"><a th:href="@{/products/{id}(id=${r.productId})}" th:text="${r.name}"></a><p th:text="'成交 ' + ${r.quantity} + ' 件'"></p></section>
+</main></div></body></html>

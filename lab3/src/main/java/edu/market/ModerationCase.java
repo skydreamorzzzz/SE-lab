@@ -11,6 +11,9 @@ import java.math.BigDecimal;
 @Entity
 
 public class ModerationCase {
+    @jakarta.persistence.ManyToOne(fetch = jakarta.persistence.FetchType.LAZY)
+    @jakarta.persistence.JoinColumn(name = "authorId", insertable = false, updatable = false)
+    private Account authorIdReference;
     @Id
     @GeneratedValue
     private Long id;

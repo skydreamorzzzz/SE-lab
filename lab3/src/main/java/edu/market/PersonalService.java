@@ -14,14 +14,16 @@ public class PersonalService {
     private final PersonalRepository entries;
     private final ProductService products;
     private final TradingService trading;
+    private final FinanceService finance;
 
     public PersonalService(AccountService accounts, AccountRepository accountStore, PersonalRepository entries,
-                           ProductService products, TradingService trading) {
+                           ProductService products, TradingService trading, FinanceService finance) {
         this.accounts = accounts;
         this.accountStore = accountStore;
         this.entries = entries;
         this.products = products;
         this.trading = trading;
+        this.finance = finance;
     }
 
     public void cart(String username, Long productId, int quantity, String group) {
@@ -116,7 +118,7 @@ public class PersonalService {
             String reason = !products.isPublic(product) ? "商品已下架" : products.sellerBanned(product) ? "卖家已封禁"
                     : product.getStock() < entry.getQuantity() ? "库存不足或售罄" : blocked(username, product.getSellerId()) ? "已屏蔽卖家" : "";
             return new CartRow(entry.getId(), product.getId(), product.getName(), entry.getQuantity(),
-                    entry.getGroupName(), product.getMinPrice(), reason);
+                    entry.getGroupName(), finance.price(product.getMinPrice()), reason);
         } catch (BusinessException unavailable) {
             return new CartRow(entry.getId(), entry.getTargetId(), "商品 #" + entry.getTargetId(), entry.getQuantity(),
                     entry.getGroupName(), BigDecimal.ZERO, "商品下架或卖家被封");

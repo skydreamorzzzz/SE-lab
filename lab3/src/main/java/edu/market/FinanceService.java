@@ -100,6 +100,11 @@ public class FinanceService {
         }
     }
 
+    public java.math.BigDecimal price(java.math.BigDecimal original) {
+        BigDecimal discount = rules.findById(1L).map(PlatformRule::getPromotionRate).orElse(BigDecimal.ZERO);
+        return original.multiply(BigDecimal.ONE.subtract(discount)).setScale(2, RoundingMode.HALF_UP).max(new BigDecimal("0.01"));
+    }
+
     public void settle(PurchaseOrder order) {
         BusinessException.require(order.getStatus() == OrderStatus.COMPLETED, "只有确认收货后才能结算");
         if (settlements.findByOrderId(order.getId()).isPresent()) {

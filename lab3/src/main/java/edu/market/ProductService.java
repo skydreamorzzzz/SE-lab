@@ -228,7 +228,21 @@ public class ProductService {
             default -> throw new BusinessException("排序方式无效");
         };
         Sort order = "price".equals(sort) ? Sort.by(field).ascending() : Sort.by(field).descending();
-        return products.findAll(spec, org.springframework.data.domain.PageRequest.of(page, 48, order.and(Sort.by("id").descending())));
+        if ("reputation".equals(sort)) {
+            spec = spec.and((r, q, c) -> {
+                if (q.getResultType() != Long.class) {
+                    var average = q.subquery(Double.class);
+                    var review = average.from(Review.class);
+                    average.select(c.avg(review.get("rating"))).where(c.equal(review.get("recipientId"), r.get("sellerId")));
+                    q.orderBy(c.desc(c.coalesce(average, 0.0)), c.desc(r.get("id")));
+                }
+                return c.conjunction();
+            });
+            order = Sort.unsorted();
+        } else {
+            order = order.and(Sort.by("id").descending());
+        }
+        return products.findAll(spec, org.springframework.data.domain.PageRequest.of(page, 48, order));
     }
 
     public Product locked(Long id) {
