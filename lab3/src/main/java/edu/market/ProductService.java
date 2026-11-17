@@ -16,13 +16,15 @@ public class ProductService {
     private final AccountService accounts;
     private final ReservationRepository reservations;
     private final AccountRepository accountStore;
+    private final PersonalRepository personal;
 
-    public ProductService(ProductRepository products, AccountService accounts, ReservationRepository reservations, ActivityService activities, AccountRepository accountStore) {
+    public ProductService(ProductRepository products, AccountService accounts, ReservationRepository reservations, ActivityService activities, AccountRepository accountStore, PersonalRepository personal) {
         this.products = products;
         this.accounts = accounts;
         this.activities = activities;
         this.reservations = reservations;
         this.accountStore = accountStore;
+        this.personal = personal;
     }
 
     public Product save(String username, Long id, Product input) {
@@ -72,6 +74,9 @@ public class ProductService {
         product.setName(input.getName());
         product.setCategory(input.getCategory());
         product.setConditionLabel(input.getConditionLabel());
+        String condition = input.getConditionLabel();
+        product.setConditionLevel("全新".equals(condition) ? 100 : "近全新".equals(condition) ? 99
+                : condition != null && condition.matches("[1-9]成新") ? (condition.charAt(0) - '0') * 10 : 0);
         product.setDescription(input.getDescription());
         product.setImageUrl(input.getImageUrl());
         product.setMinPrice(input.getMinPrice());
@@ -113,6 +118,7 @@ public class ProductService {
                 : ProductStatus.DRAFT);
         product.setReviewNote(note);
         if (approve) {
+            product.setPublishedAt(java.time.Instant.now());
             allocateStock(product);
             product.setStatus(product.getStock() == 0 ? ProductStatus.SOLD_OUT : ProductStatus.ON_SALE);
         }
@@ -136,11 +142,23 @@ public class ProductService {
             BusinessException.require(actor.getId().equals(product.getSellerId())
                     || actor.getRole().equals("ADMIN"), "无权查看未公开商品");
         }
+        if (username != null) {
+            BusinessException.require(personal.findByOwnerIdAndKindAndTargetKey(accounts.current(username).getId(),
+                    "BLOCK", product.getSellerId().toString()).isEmpty(), "已屏蔽此卖家");
+        }
         return product;
     }
 
     public List<Product> search(String keyword, String category, BigDecimal min, BigDecimal max,
                                 ProductStatus status, String sort) {
+        return searchPage(null, keyword, category, min, max, status, sort, 0).getContent();
+    }
+
+    public org.springframework.data.domain.Page<Product> searchPage(String username, String keyword, String category,
+            BigDecimal min, BigDecimal max, ProductStatus status, String sort, int page) {
+        BusinessException.require(page >= 0 && page <= 100000, "页码无效");
+        BusinessException.require(keyword == null || keyword.length() <= 100, "关键词不超过100字");
+        BusinessException.require(category == null || category.isBlank() || category.matches("[^/%_]{1,50}(/[^/%_]{1,50})?"), "分类无效");
         BusinessException.require(min == null || min.signum() >= 0, "最低价不能为负");
         BusinessException.require(max == null || max.signum() >= 0, "最高价不能为负");
         BusinessException.require(min == null || max == null || min.compareTo(max) <= 0, "价格区间倒置");
@@ -152,6 +170,14 @@ public class ProductService {
             sellers.select(seller.get("id")).where(cb.isFalse(seller.get("banned")));
             return cb.and(root.get("status").in(ProductStatus.ON_SALE, ProductStatus.SOLD_OUT), root.get("sellerId").in(sellers));
         };
+        if (username != null) {
+            Long userId = accounts.current(username).getId();
+            List<Long> blocked = personal.findByOwnerIdAndKindOrderByUpdatedAtDesc(userId, "BLOCK")
+                    .stream().map(PersonalEntry::getTargetId).toList();
+            if (!blocked.isEmpty()) {
+                spec = spec.and((r, q, c) -> c.not(r.get("sellerId").in(blocked)));
+            }
+        }
         if (keyword != null && !keyword.isBlank()) {
             spec = spec.and((r, q, c) -> c.like(c.lower(r.get("name")),
                     "%" + keyword.toLowerCase().replace("%", "\\%").replace("_", "\\_") + "%", '\\'));
@@ -169,9 +195,17 @@ public class ProductService {
         if (status != null) {
             spec = spec.and((r, q, c) -> c.equal(r.get("status"), status));
         }
-        Sort order = "price".equals(sort) ? Sort.by("minPrice").ascending().and(Sort.by("id"))
-                : Sort.by("id").descending();
-        return products.findAll(spec, order);
+        String field = switch (sort == null ? "newest" : sort) {
+            case "price" -> "minPrice";
+            case "favorites" -> "favoriteCount";
+            case "sales" -> "soldQuantity";
+            case "reputation" -> "ratingScore";
+            case "condition" -> "conditionLevel";
+            case "newest", "default" -> "publishedAt";
+            default -> throw new BusinessException("排序方式无效");
+        };
+        Sort order = "price".equals(sort) ? Sort.by(field).ascending() : Sort.by(field).descending();
+        return products.findAll(spec, org.springframework.data.domain.PageRequest.of(page, 48, order.and(Sort.by("id").descending())));
     }
 
     public Product locked(Long id) {

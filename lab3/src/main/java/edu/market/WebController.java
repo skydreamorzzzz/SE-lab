@@ -22,10 +22,11 @@ public class WebController {
     private final ReservationRepository reservations;
     private final ReviewRepository reviews;
     private final ReviewService reviewService;
+    private final PersonalService personal;
 
     public WebController(AccountService accounts, ProductService products, ProductRepository productStore,
                          TradingService trading, PurchaseOrderRepository orders, ReservationRepository reservations,
-                         ReviewRepository reviews, ReviewService reviewService) {
+                         ReviewRepository reviews, ReviewService reviewService, PersonalService personal) {
         this.accounts = accounts;
         this.products = products;
         this.productStore = productStore;
@@ -34,6 +35,7 @@ public class WebController {
         this.reservations = reservations;
         this.reviews = reviews;
         this.reviewService = reviewService;
+        this.personal = personal;
     }
 
     @ModelAttribute
@@ -49,8 +51,12 @@ public class WebController {
                 @RequestParam(required = false) BigDecimal min,
                 @RequestParam(required = false) BigDecimal max,
                 @RequestParam(required = false) ProductStatus status,
-                @RequestParam(defaultValue = "newest") String sort, Model model) {
-        model.addAttribute("items", products.search(keyword, category, min, max, status, sort));
+                @RequestParam(defaultValue = "newest") String sort, @RequestParam(defaultValue = "0") int page, Principal principal, Model model) {
+        String username = principal == null ? null : principal.getName();
+        var result = products.searchPage(username, keyword, category, min, max, status, sort, page);
+        personal.history(username, "SEARCH", keyword, null);
+        model.addAttribute("items", result.getContent());
+        model.addAttribute("result", result);
         return "home";
     }
 
@@ -90,6 +96,7 @@ public class WebController {
     @GetMapping("/products/{id}")
     String detail(@PathVariable Long id, Principal principal, Model model) {
         Product product = products.detail(id, principal == null ? null : principal.getName());
+        personal.history(principal == null ? null : principal.getName(), "VIEW", id.toString(), id);
         model.addAttribute("product", product);
         model.addAttribute("reviews", reviews.findByProductIdOrderByIdDesc(id));
         model.addAttribute("requestKey", UUID.randomUUID().toString());

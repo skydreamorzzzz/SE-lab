@@ -12,17 +12,20 @@ public class ReviewService {
     private final TradingService trading;
     private final PurchaseOrderRepository orders;
     private final ReviewRepository reviews;
+    private final ProductService products;
 
     public ReviewService(AccountService accounts, TradingService trading,
-                         PurchaseOrderRepository orders, ReviewRepository reviews, ActivityService activities) {
+                         PurchaseOrderRepository orders, ReviewRepository reviews, ActivityService activities, ProductService products) {
         this.accounts = accounts;
         this.activities = activities;
         this.trading = trading;
         this.orders = orders;
         this.reviews = reviews;
+        this.products = products;
     }
 
     public Review submit(String username, Long orderId, int rating, String content) {
+        Product product = products.locked(orders.productId(orderId).orElseThrow());
         trading.detail(username, orderId);
         PurchaseOrder order = orders.lockById(orderId).orElseThrow();
         Account author = accounts.current(username);
@@ -40,6 +43,9 @@ public class ReviewService {
         review.setContent(content.strip());
         review.setCreatedAt(Instant.now());
         Review saved = reviews.save(review);
+        product.setRatingScore(reviews.findByProductIdOrderByIdDesc(product.getId()).stream()
+                .filter(r -> r.getRecipientId().equals(product.getSellerId()))
+                .mapToInt(Review::getRating).average().orElse(0));
         activities.record(username, "REVIEW", saved.getId(), "SUBMIT", "PUBLISHED");
         return saved;
     }

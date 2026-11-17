@@ -10,10 +10,12 @@ import org.springframework.web.bind.annotation.PathVariable;
 public class SellerController {
     private final SellerService sellers;
     private final AccountService accounts;
+    private final PersonalService personal;
 
-    public SellerController(SellerService sellers, AccountService accounts) {
+    public SellerController(SellerService sellers, AccountService accounts, PersonalService personal) {
         this.sellers = sellers;
         this.accounts = accounts;
+        this.personal = personal;
     }
 
     @GetMapping("/sellers/{id}")
@@ -21,6 +23,8 @@ public class SellerController {
         if (principal != null) {
             model.addAttribute("viewer", accounts.current(principal.getName()));
         }
+        BusinessException.require(!personal.blocked(principal == null ? null : principal.getName(), id), "已屏蔽此卖家");
+        model.addAttribute("sellerId", id);
         model.addAttribute("seller", sellers.profile(id));
         return "seller";
     }

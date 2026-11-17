@@ -18,9 +18,10 @@ public class TradingService {
     private final ReservationRepository reservations;
     private final AccountRepository accountStore;
     private final FinanceService finance;
+    private final PersonalRepository personal;
 
     public TradingService(AccountService accounts, ProductService products,
-                          PurchaseOrderRepository orders, ReservationRepository reservations, AccountRepository accountStore, ActivityService activities, FinanceService finance) {
+                          PurchaseOrderRepository orders, ReservationRepository reservations, AccountRepository accountStore, ActivityService activities, FinanceService finance, PersonalRepository personal) {
         this.accounts = accounts;
         this.activities = activities;
         this.products = products;
@@ -28,12 +29,14 @@ public class TradingService {
         this.reservations = reservations;
         this.accountStore = accountStore;
         this.finance = finance;
+        this.personal = personal;
     }
 
     public PurchaseOrder buy(String username, Long productId, int quantity, BigDecimal displayedPrice,
                              String requestKey) {
         Account buyer = buyer(username);
         Product product = products.locked(productId);
+        BusinessException.require(personal.findByOwnerIdAndKindAndTargetKey(buyer.getId(), "BLOCK", product.getSellerId().toString()).isEmpty(), "已屏蔽此卖家");
         String key = buyer.getId() + ":" + requestKey;
         BusinessException.require(requestKey != null && requestKey.matches("[a-zA-Z0-9-]{8,80}"), "下单凭证无效");
         var previous = orders.findByRequestKey(key);
@@ -159,6 +162,7 @@ public class TradingService {
             case "receive" -> {
                 BusinessException.require(isBuyer, "仅买家可确认收货");
                 state(order, OrderStatus.SHIPPED);
+                product.setSoldQuantity(product.getSoldQuantity() + order.getQuantity());
                 order.setStatus(OrderStatus.COMPLETED);
                 finance.settle(order);
             }
@@ -177,7 +181,8 @@ public class TradingService {
         }
         if (order.getStatus() == OrderStatus.SHIPPED && order.getSignedAt() != null
                 && !order.getSignedAt().plus(Duration.ofDays(7)).isAfter(now)) {
-            order.setStatus(OrderStatus.COMPLETED);
+            product.setSoldQuantity(product.getSoldQuantity() + order.getQuantity());
+                order.setStatus(OrderStatus.COMPLETED);
                 finance.settle(order);
         }
     }

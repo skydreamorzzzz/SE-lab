@@ -14,6 +14,15 @@ public class Product {
     private boolean negotiable;
     @Column(nullable = false, columnDefinition = "bigint default 0")
     private long listingRevision;
+    @Column(nullable = false, columnDefinition = "bigint default 0")
+    private long favoriteCount;
+    @Column(nullable = false, columnDefinition = "bigint default 0")
+    private long soldQuantity;
+    @Column(nullable = false, columnDefinition = "double default 0")
+    private double ratingScore;
+    @Column(nullable = false, columnDefinition = "integer default 0")
+    private int conditionLevel;
+    private java.time.Instant publishedAt;
     @Id
     @GeneratedValue
     private Long id;
@@ -146,5 +155,45 @@ public class Product {
 
     public void setListingRevision(long value) {
         listingRevision = value;
+    }
+
+    public long getFavoriteCount() {
+        return favoriteCount;
+    }
+
+    public void setFavoriteCount(long value) {
+        favoriteCount = value;
+    }
+
+    public long getSoldQuantity() {
+        return soldQuantity;
+    }
+
+    public void setSoldQuantity(long value) {
+        soldQuantity = value;
+    }
+
+    public double getRatingScore() {
+        return ratingScore;
+    }
+
+    public void setRatingScore(double value) {
+        ratingScore = value;
+    }
+
+    public int getConditionLevel() {
+        return conditionLevel;
+    }
+
+    public void setConditionLevel(int value) {
+        conditionLevel = value;
+    }
+
+    public java.time.Instant getPublishedAt() {
+        return publishedAt;
+    }
+
+    public void setPublishedAt(java.time.Instant value) {
+        publishedAt = value;
     }
 }

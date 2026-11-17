@@ -19,6 +19,7 @@ public class SellerService {
 
     public SellerCard profile(Long id) {
         Account seller = accounts.findById(id).orElseThrow(() -> new BusinessException("卖家不存在"));
+        BusinessException.require(!seller.getBanned(), "卖家已封禁");
         BusinessException.require(seller.getRole().equals("SELLER"), "该用户不是卖家");
         List<Review> received = reviews.findByRecipientIdOrderByIdDesc(id);
         double average = received.stream().mapToInt(Review::getRating).average().orElse(0);
