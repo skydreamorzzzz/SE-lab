@@ -46,7 +46,7 @@ public class PersonalService {
             products.detail(targetId, username);
         } else {
             Account target = accountStore.findById(targetId).orElseThrow(() -> new BusinessException("卖家不存在"));
-            BusinessException.require(target.getRole().equals("SELLER") && !targetId.equals(actor.getId()), "请选择其他卖家");
+            BusinessException.require(target.getTrader() && !targetId.equals(actor.getId()), "请选择其他卖家");
         }
         if (kind.equals("BLOCK")) {
             accounts.requireRole(actor, "BUYER");
@@ -72,6 +72,12 @@ public class PersonalService {
             return;
         }
         upsert(accounts.current(username), kind, keyword, productId);
+    }
+
+    public void clearHistory(String username) {
+        Long owner = accounts.current(username).getId();
+        accountStore.locked(owner).orElseThrow();
+        entries.deleteAll(entries.findByOwnerIdAndKindOrderByUpdatedAtDesc(owner, "SEARCH"));
     }
 
     public List<PersonalEntry> list(String username, String kind) {

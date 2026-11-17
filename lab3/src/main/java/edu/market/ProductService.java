@@ -77,7 +77,14 @@ public class ProductService {
         if (input.getExtraImages() != null && !input.getExtraImages().isBlank()) {
             input.setExtraImages(String.join(" ", input.getExtraImages().strip().split("\\s+")));
         }
-        boolean optionalChanged = !Objects.equals(product.getBrand(), input.getBrand())
+        Geo.validate(input.getLatitude(), input.getLongitude());
+        BusinessException.require(input.getCity() == null || input.getCity().length() <= 40, "地区不超过40字");
+        BusinessException.require(input.getTradeTags() == null || input.getTradeTags().length() <= 200, "交易标签过长");
+        boolean locationChanged = !Objects.equals(product.getCity(), input.getCity())
+                || !Objects.equals(product.getLatitude(), input.getLatitude())
+                || !Objects.equals(product.getLongitude(), input.getLongitude())
+                || !Objects.equals(product.getTradeTags(), input.getTradeTags());
+        boolean optionalChanged = locationChanged || !Objects.equals(product.getBrand(), input.getBrand())
                 || !Objects.equals(product.getModelName(), input.getModelName())
                 || !Objects.equals(product.getUsageYears(), input.getUsageYears())
                 || !Objects.equals(product.getOriginPlace(), input.getOriginPlace())
@@ -93,6 +100,10 @@ public class ProductService {
                 || !Objects.equals(product.getImageUrl(), input.getImageUrl())
                 || !Objects.equals(product.getCategory(), input.getCategory())
                 || !Objects.equals(product.getConditionLabel(), input.getConditionLabel());
+        product.setCity(input.getCity());
+        product.setLatitude(input.getLatitude());
+        product.setLongitude(input.getLongitude());
+        product.setTradeTags(input.getTradeTags());
         product.setExtraImages(input.getExtraImages());
         product.setVideoUrl(input.getVideoUrl());
         product.setBrand(input.getBrand());
@@ -111,7 +122,7 @@ public class ProductService {
         product.setConditionLabel(input.getConditionLabel());
         String condition = input.getConditionLabel();
         product.setConditionLevel("全新".equals(condition) ? 100 : "近全新".equals(condition) ? 99
-                : condition != null && condition.matches("[1-9]成新") ? (condition.charAt(0) - '0') * 10 : 0);
+                : condition != null && condition.matches("[1-9]成新.*") ? (condition.charAt(0) - '0') * 10 : 0);
         product.setDescription(input.getDescription());
         product.setImageUrl(input.getImageUrl());
         product.setMinPrice(input.getMinPrice());
@@ -191,6 +202,11 @@ public class ProductService {
 
     public org.springframework.data.domain.Page<Product> searchPage(String username, String keyword, String category,
             BigDecimal min, BigDecimal max, ProductStatus status, String sort, int page) {
+        return searchPage(username, keyword, category, min, max, status, sort, page, CatalogFilter.none());
+    }
+
+    public org.springframework.data.domain.Page<Product> searchPage(String username, String keyword, String category,
+            BigDecimal min, BigDecimal max, ProductStatus status, String sort, int page, CatalogFilter filter) {
         BusinessException.require(page >= 0 && page <= 100000, "页码无效");
         BusinessException.require(keyword == null || keyword.length() <= 100, "关键词不超过100字");
         BusinessException.require(category == null || category.isBlank() || category.matches("[^/%_]{1,50}(/[^/%_]{1,50})?"), "分类无效");
@@ -213,9 +229,11 @@ public class ProductService {
                 spec = spec.and((r, q, c) -> c.not(r.get("sellerId").in(blocked)));
             }
         }
+        spec = spec.and(filter.specification());
         if (keyword != null && !keyword.isBlank()) {
-            spec = spec.and((r, q, c) -> c.like(c.lower(r.get("name")),
-                    "%" + keyword.toLowerCase().replace("%", "\\%").replace("_", "\\_") + "%", '\\'));
+            String term = "%" + keyword.toLowerCase(java.util.Locale.ROOT).replace("%", "\\%").replace("_", "\\_") + "%";
+            spec = spec.and((r, q, c) -> c.or(c.like(c.lower(r.get("name")), term, '\\'),
+                    c.like(c.lower(r.get("brand")), term, '\\'), c.like(c.lower(r.get("modelName")), term, '\\')));
         }
         if (category != null && !category.isBlank()) {
             spec = spec.and((r, q, c) -> c.or(c.equal(r.get("category"), category),
@@ -231,22 +249,33 @@ public class ProductService {
             spec = spec.and((r, q, c) -> c.equal(r.get("status"), status));
         }
         String field = switch (sort == null ? "newest" : sort) {
-            case "price" -> "minPrice";
+            case "price", "priceDesc" -> "minPrice";
             case "favorites" -> "favoriteCount";
             case "sales" -> "soldQuantity";
-            case "reputation" -> "ratingScore";
+            case "reputation", "positiveRate" -> "ratingScore";
             case "condition" -> "conditionLevel";
             case "newest", "default" -> "publishedAt";
             default -> throw new BusinessException("排序方式无效");
         };
         Sort order = "price".equals(sort) ? Sort.by(field).ascending() : Sort.by(field).descending();
-        if ("reputation".equals(sort)) {
+        if ("reputation".equals(sort) || "positiveRate".equals(sort)) {
             spec = spec.and((r, q, c) -> {
                 if (q.getResultType() != Long.class) {
                     var average = q.subquery(Double.class);
                     var review = average.from(Review.class);
                     average.select(c.avg(review.get("rating"))).where(c.equal(review.get("recipientId"), r.get("sellerId")));
-                    q.orderBy(c.desc(c.coalesce(average, 0.0)), c.desc(r.get("id")));
+                    if ("positiveRate".equals(sort)) {
+                        var count = q.subquery(Long.class);
+                        var all = count.from(Review.class);
+                        count.select(c.count(all)).where(c.equal(all.get("recipientId"), r.get("sellerId")));
+                        var positive = q.subquery(Long.class);
+                        var good = positive.from(Review.class);
+                        positive.select(c.count(good)).where(c.equal(good.get("recipientId"), r.get("sellerId")), c.ge(good.get("rating"), 4));
+                        var denominator = c.sum(count, c.<Long>selectCase().when(c.equal(count, 0L), 1L).otherwise(0L));
+                        q.orderBy(c.desc(c.quot(c.prod(positive, 100.0), denominator)), c.desc(r.get("id")));
+                    } else {
+                        q.orderBy(c.desc(c.coalesce(average, 0.0)), c.desc(r.get("id")));
+                    }
                 }
                 return c.conjunction();
             });
@@ -318,7 +347,7 @@ public class ProductService {
                 "请填写描述");
         BusinessException.require(product.getImageUrl() != null
                 && (product.getImageUrl().matches("https://[^\\s]+\\.(?i:png|jpg|jpeg|webp)")
-                || product.getImageUrl().equals("/images/sample.svg") || product.getImageUrl().matches("/media/[a-zA-Z0-9.-]+")), "请提供 HTTPS 图片地址或使用本地示例图");
+                || product.getImageUrl().matches("/images/lab2/(camera|headphones|keyboard|lamp)\\.svg") || product.getImageUrl().equals("/images/sample.svg") || product.getImageUrl().matches("/media/[a-zA-Z0-9.-]+")), "请提供 HTTPS 图片地址或使用本地示例图");
         BusinessException.require(product.getMinPrice() != null && product.getMaxPrice() != null
                 && product.getMinPrice().signum() > 0
                 && product.getMinPrice().scale() <= 2 && product.getMaxPrice().scale() <= 2

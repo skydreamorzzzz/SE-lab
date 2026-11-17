@@ -24,10 +24,11 @@ public class WebController {
     private final ReviewService reviewService;
     private final PersonalService personal;
     private final FinanceService finance;
+    private final DesignViewService design;
 
     public WebController(AccountService accounts, ProductService products, ProductRepository productStore,
                          TradingService trading, PurchaseOrderRepository orders, ReservationRepository reservations,
-                         ReviewRepository reviews, ReviewService reviewService, PersonalService personal, FinanceService finance) {
+                         ReviewRepository reviews, ReviewService reviewService, PersonalService personal, FinanceService finance, DesignViewService design) {
         this.accounts = accounts;
         this.products = products;
         this.productStore = productStore;
@@ -38,6 +39,7 @@ public class WebController {
         this.reviewService = reviewService;
         this.personal = personal;
         this.finance = finance;
+        this.design = design;
     }
 
     @ModelAttribute
@@ -57,7 +59,8 @@ public class WebController {
         String username = principal == null ? null : principal.getName();
         var result = products.searchPage(username, keyword, category, min, max, status, sort, page);
         personal.history(username, "SEARCH", keyword, null);
-        model.addAttribute("items", result.getContent());
+        model.addAttribute("items", design.cards(result.getContent(), username, null, null));
+        model.addAttribute("activeNav", "home");
         model.addAttribute("result", result);
         return "home";
     }
@@ -201,9 +204,11 @@ public class WebController {
     String reservations(Principal principal, Model model) {
         Account actor = accounts.current(principal.getName());
         List<Reservation> items;
-        if (actor.getRole().equals("SELLER")) {
-            items = productStore.findBySellerIdOrderByIdDesc(actor.getId()).stream()
-                    .flatMap(p -> reservations.findByProductIdOrderByIdAsc(p.getId()).stream()).toList();
+        if (actor.getTrader()) {
+            var own = reservations.findByBuyerIdOrderByIdDesc(actor.getId());
+            var incoming = productStore.findBySellerIdOrderByIdDesc(actor.getId()).stream()
+                    .flatMap(p -> reservations.findByProductIdOrderByIdAsc(p.getId()).stream());
+            items = java.util.stream.Stream.concat(own.stream(), incoming).distinct().toList();
         } else {
             items = reservations.findByBuyerIdOrderByIdDesc(actor.getId());
         }

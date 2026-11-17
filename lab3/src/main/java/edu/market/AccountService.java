@@ -43,7 +43,7 @@ public class AccountService {
 
     public void requireRole(Account account, String role) {
         BusinessException.require(!account.getBanned(), "账户已封禁，可通过申诉入口申请复核");
-        BusinessException.require(account.getRole().equals(role), "无权执行此操作");
+        BusinessException.require(account.getRoles().contains(role), "无权执行此操作");
     }
 
     public static void validatePassword(String password) {

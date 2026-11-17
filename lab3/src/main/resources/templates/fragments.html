@@ -7,7 +7,7 @@
 <header class="top" th:fragment="header">
 <div class="header"><a class="brand" th:href="@{/}"><span class="brand-mark">拾</span><span><b class="brand-name">拾物集</b><small class="brand-sub">让闲置遇见新主人</small></span></a></div>
 <nav class="inline"><a th:href="@{/}">发现好物</a><a th:href="@{/orders}">我的订单</a><a th:href="@{/reservations}">预约队列</a>
-<a th:if="${viewer != null and viewer.role == 'SELLER'}" th:href="@{/seller/products}">商品管理</a>
+<a th:if="${viewer != null and viewer.trader}" th:href="@{/seller/products}">商品管理</a>
 <a th:if="${viewer != null and viewer.role == 'ADMIN'}" th:href="@{/admin}">审核后台</a>
 <a th:if="${viewer != null}" th:href="@{/profile}" th:text="${viewer.displayName}">个人中心</a>
 <a th:if="${viewer == null}" th:href="@{/login}">登录 / 注册</a>

@@ -1,18 +1,62 @@
-<!doctype html>
+<!DOCTYPE html>
+
 <html lang="zh-CN" xmlns:th="http://www.thymeleaf.org">
-<head th:replace="~{fragments :: head('发现好物')}"></head>
-<body><div class="app"><header th:replace="~{fragments :: header}"></header>
-<main class="content"><h1>发现好物</h1>
-<form class="panel filters" th:action="@{/}" method="get">
-<label>关键词<input name="keyword" th:value="${param.keyword}" placeholder="搜索二手好物"></label>
-<label>两级分类<input name="category" th:value="${param.category}" placeholder="数码电子/相机"></label>
-<label>最低价<input type="number" name="min" min="0" step="0.01" th:value="${param.min}"></label>
-<label>最高价<input type="number" name="max" min="0" step="0.01" th:value="${param.max}"></label>
-<label>商品状态<select name="status"><option value="">全部公开</option><option value="ON_SALE">在售</option><option value="SOLD_OUT">售罄可预约</option></select></label>
-<label>排序<select name="sort"><option value="newest">最新发布</option><option value="price">价格从低到高</option><option value="favorites">收藏最多</option><option value="sales">销量最多</option><option value="reputation">信誉优先</option><option value="condition">成色优先</option></select></label><button>搜索</button><a th:href="@{/}">重置</a></form>
-<p class="empty-state" th:if="${#lists.isEmpty(items)}">暂无匹配商品。卖家可创建草稿并提交管理员审核。</p>
-<div class="catalog"><a class="product" th:each="p : ${items}" th:href="@{/products/{id}(id=${p.id})}">
-<div class="art"><img th:src="${p.imageUrl}" th:alt="${p.name}"><span class="chip" th:text="${p.status.label}"></span></div>
-<div class="product-body"><h2 class="product-title" th:text="${p.name}"></h2><p class="product-desc" th:text="${p.category} + ' · ' + ${p.conditionLabel}"></p><div class="bottom-line"><span class="price" th:text="${p.minPrice}"></span><small th:text="'可售库存 ' + ${p.stock}"></small></div></div></a></div>
-<nav class="inline"><a th:if="${result.hasPrevious()}" th:href="@{/(page=${result.number - 1},keyword=${param.keyword},category=${param.category},min=${param.min},max=${param.max},status=${param.status},sort=${param.sort})}">上一页</a><span th:text="'第 ' + ${result.number + 1} + ' 页'"></span><a th:if="${result.hasNext()}" th:href="@{/(page=${result.number + 1},keyword=${param.keyword},category=${param.category},min=${param.min},max=${param.max},status=${param.status},sort=${param.sort})}">下一页</a></nav><a class="button" th:href="@{/ranking}">全站与分类成交榜单</a>
-</main></div></body></html>
+<head><link href="/css/lab2-home.css" rel="stylesheet"/>
+<meta charset="utf-8"/>
+<meta content="width=device-width,initial-scale=1,viewport-fit=cover" name="viewport"/>
+<title>拾物集 · 二手交易首页原型</title>
+
+<meta name="csrf" th:content="${_csrf.token}"/><meta name="csrf-header" th:content="${_csrf.headerName}"/><meta name="authenticated" th:content="${viewer != null}"/><link href="/css/lab2-integration.css" rel="stylesheet"/><script defer="" src="/js/market.js"></script></head>
+<body>
+<div class="app">
+<header class="top">
+<div class="header">
+<a aria-label="拾物集首页" class="brand" href="/">
+<span class="brand-mark"><svg fill="none" height="25" stroke="white" stroke-linecap="round" stroke-linejoin="round" stroke-width="2.4" viewbox="0 0 24 24" width="25"><path d="M5 8c2.5 0 2.5-3 5-3s2.5 3 5 3 2.5-3 5-3"></path><path d="M5 13c2.5 0 2.5-3 5-3s2.5 3 5 3 2.5-3 5-3"></path><path d="M5 18c2.5 0 2.5-3 5-3s2.5 3 5 3 2.5-3 5-3"></path></svg></span>
+<span><span class="brand-name">拾物集</span><span class="brand-sub">让闲置遇见新主人</span></span>
+</a>
+<form action="/search" autocomplete="off" class="search" id="searchForm" method="get">
+<svg class="search-icon" fill="none" stroke="currentColor" stroke-linecap="round" stroke-width="2" viewbox="0 0 24 24"><circle cx="10.8" cy="10.8" r="6.5"></circle><path d="m16 16 5 5"></path></svg>
+<input aria-label="搜索商品" id="searchInput" name="q" placeholder="搜索你想要的二手好物"/>
+<button type="submit">搜索</button>
+</form>
+<div class="top-actions"><button onclick="Market.go('/messages')" type="button"><svg fill="none" stroke="currentColor" stroke-width="1.8" viewbox="0 0 24 24"><path d="M4 5h16v12H8l-4 4V5z"></path></svg>消息</button></div>
+</div>
+</header>
+<main class="content">
+<div class="browse-row"><div class="heading"><h1 id="sectionTitle">为你推荐</h1><small>发现值得再次心动的好物</small></div><div class="sort"><button class="selected" data-sort="recommend" onclick="sortHome(this.dataset.sort)">综合</button><span>|</span><button data-sort="new" onclick="sortHome(this.dataset.sort)">最新</button><span>|</span><button data-sort="price" onclick="sortHome(this.dataset.sort)">价格</button></div></div>
+<div aria-label="商品分类" class="filters" role="group">
+<button class="filter active" data-filter="全部" onclick="filterHome(this.dataset.filter)" type="button">全部好物</button>
+<button class="filter" data-filter="数码" onclick="filterHome(this.dataset.filter)" type="button">数码电子</button>
+<button class="filter" data-filter="影音" onclick="filterHome(this.dataset.filter)" type="button">影音设备</button>
+<button class="filter" data-filter="家居" onclick="filterHome(this.dataset.filter)" type="button">家居生活</button>
+<button class="filter" data-filter="办公" onclick="filterHome(this.dataset.filter)" type="button">办公学习</button>
+</div>
+<section aria-label="推荐商品" class="catalog" id="catalog">
+<article class="product" onclick="Market.go('/products/'+this.dataset.id)" onkeydown="if(event.key==='Enter')this.click()" role="link" tabindex="0" th:attr="data-id=${p.id},data-price=${p.price},data-category=${p.category},data-title=${p.name}" th:each="p : ${items}">
+<div class="art" style="background:#f6e7db" th:style="'background:' + ${#strings.startsWith(p.category,'影音') ? '#dfebef' : (#strings.startsWith(p.category,'办公') ? '#eae6ef' : (#strings.startsWith(p.category,'家居') ? '#f4e8dc' : '#f6e7db'))}">
+<span class="chip" th:text="${p.statusLabel}">闲置精选</span>
+<button aria-label="收藏商品" class="like" onclick="favorite(event,this)" th:attr="data-id=${p.id},aria-pressed=${p.liked}" th:classappend="${p.liked} ? 'active' : ''"><svg fill="none" stroke="currentColor" stroke-linejoin="round" stroke-width="1.9" viewbox="0 0 24 24"><path d="M20.8 8.6c0 4.4-8.8 10-8.8 10s-8.8-5.6-8.8-10a4.7 4.7 0 0 1 8.8-2.2 4.7 4.7 0 0 1 8.8 2.2z"></path></svg></button>
+<img loading="lazy" th:alt="${p.name}" th:src="${p.imageUrl}"/>
+</div>
+<div class="product-body"><h2 class="product-title" th:text="${p.name}">复古数码相机 · 九成新</h2><div class="product-desc" th:text="${p.description}">功能完好 / 附原装电池和背带</div><div class="bottom-line"><div><span class="price" th:text="${p.price}">459</span></div><span class="seller"><span class="seller-avatar" th:text="${#strings.substring(p.seller,0,1)}"></span><span th:text="${p.seller}"></span></span></div></div>
+</article>
+
+
+
+</section>
+<div class="empty" id="empty" th:classappend="${#lists.isEmpty(items)} ? 'show' : ''">没有找到匹配的商品，换个关键词试试看吧。</div>
+<div class="page-links" th:if="${result.hasNext() or result.hasPrevious()}"><a th:href="@{/(page=${result.number - 1},keyword=${param.keyword},category=${param.category},sort=${param.sort})}" th:if="${result.hasPrevious()}">上一页</a><span th:text="'第 ' + ${result.number + 1} + ' 页'"></span><a th:href="@{/(page=${result.number + 1},keyword=${param.keyword},category=${param.category},sort=${param.sort})}" th:if="${result.hasNext()}">下一页</a></div></main>
+<nav aria-label="底部导航" class="bottom-nav" th:replace="~{lab2-fragments :: navigation('home')}">
+<button class="nav active" data-tab="首页" onclick="changeTab(this)" type="button"><svg fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" viewbox="0 0 24 24"><path d="m3 10 9-7 9 7v10H3z"></path><path d="M9 20v-7h6v7"></path></svg><span class="nav-label">首页</span></button>
+<button class="nav" data-tab="附近商品" onclick="changeTab(this)" type="button"><svg fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" viewbox="0 0 24 24"><path d="M20 10c0 6-8 12-8 12S4 16 4 10a8 8 0 0 1 16 0z"></path><circle cx="12" cy="10" r="2.6"></circle></svg><span class="nav-label">附近商品</span></button>
+<button class="nav sell-nav" data-tab="出售商品" onclick="openSell()" type="button"><span class="sell-btn"><svg fill="none" stroke="currentColor" stroke-linecap="round" viewbox="0 0 24 24"><path d="M12 4v16M4 12h16"></path></svg></span><span class="nav-label">出售商品</span></button>
+<button class="nav" data-tab="消息" onclick="showToast('消息页面将在后续原型中设计')" type="button"><svg fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" viewbox="0 0 24 24"><path d="M4 5h16v13H9l-5 3V5z"></path><path d="M8 10h8M8 14h5"></path></svg><span class="nav-label">消息</span></button>
+<button class="nav" data-tab="个人资料" onclick="showToast('个人中心将在后续原型中设计')" type="button"><svg fill="none" stroke="currentColor" stroke-linecap="round" viewbox="0 0 24 24"><circle cx="12" cy="8" r="4"></circle><path d="M4.5 21c0-4 3.4-6 7.5-6s7.5 2 7.5 6"></path></svg><span class="nav-label">个人资料</span></button>
+</nav>
+<div class="toast" id="toast" role="status"></div>
+
+</div>
+
+<script defer="" src="/js/lab2-home.js"></script></body>
+</html>

@@ -23,14 +23,14 @@ public class SecurityConfig {
             Account account = accounts.findByUsername(username)
                     .orElseThrow(() -> new UsernameNotFoundException(username));
             return User.withUsername(account.getUsername()).password(account.getPasswordHash())
-                    .roles(account.getRole()).build();
+                    .roles(account.getRoles().toArray(String[]::new)).build();
         };
     }
 
     @Bean
     SecurityFilterChain securityFilterChain(HttpSecurity http, AccountAccessFilter accountAccess) throws Exception {
         http.authorizeHttpRequests(auth -> auth
-                .requestMatchers("/", "/products/*", "/sellers/*", "/login", "/register", "/recover", "/ranking", "/availability/*", "/js/**", "/css/**", "/images/**", "/error")
+                .requestMatchers("/", "/search", "/api/catalog", "/api/products/*/comments", "/products/*", "/sellers/*", "/login", "/register", "/recover", "/ranking", "/availability/*", "/js/**", "/css/**", "/images/**", "/error")
                 .permitAll().requestMatchers(org.springframework.http.HttpMethod.GET, "/media/*").permitAll()
                 .requestMatchers("/admin/**").hasRole("ADMIN")
                 .requestMatchers("/seller/**").hasRole("SELLER").anyRequest().authenticated())

@@ -21,6 +21,10 @@ public class Account {
     private java.time.Instant phoneChallengeExpires;
     @Column(nullable = false, columnDefinition = "integer default 0")
     private int phoneAttempts;
+    private String city;
+    private String bio;
+    private String avatarUrl;
+    private java.time.Instant createdAt = java.time.Instant.now();
     @Id
     @GeneratedValue
     private Long id;
@@ -138,5 +142,44 @@ public class Account {
 
     public void setPhoneAttempts(int value) {
         phoneAttempts = value;
+    }
+
+    public String getCity() {
+        return city;
+    }
+
+    public void setCity(String value) {
+        city = value;
+    }
+
+    public String getBio() {
+        return bio;
+    }
+
+    public void setBio(String value) {
+        bio = value;
+    }
+
+    public String getAvatarUrl() {
+        return avatarUrl;
+    }
+
+    public void setAvatarUrl(String value) {
+        avatarUrl = value;
+    }
+
+    public java.time.Instant getCreatedAt() {
+        return createdAt;
+    }
+
+    public void setCreatedAt(java.time.Instant value) {
+        createdAt = value;
+    }
+    public java.util.Set<String> getRoles() {
+        return role.equals("ADMIN") ? java.util.Set.of("ADMIN") : java.util.Set.of("BUYER", "SELLER");
+    }
+
+    public boolean getTrader() {
+        return !role.equals("ADMIN");
     }
 }

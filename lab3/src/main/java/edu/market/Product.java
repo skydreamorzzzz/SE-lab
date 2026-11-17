@@ -38,6 +38,10 @@ public class Product {
     @jakarta.persistence.ManyToOne(fetch = jakarta.persistence.FetchType.LAZY)
     @jakarta.persistence.JoinColumn(name = "sellerId", insertable = false, updatable = false)
     private Account sellerIdReference;
+    private String city;
+    private Double latitude;
+    private Double longitude;
+    private String tradeTags;
     @Id
     @GeneratedValue
     private Long id;
@@ -283,5 +287,37 @@ public class Product {
 
     public void setReturnSupported(boolean value) {
         returnSupported = value;
+    }
+
+    public String getCity() {
+        return city;
+    }
+
+    public void setCity(String value) {
+        city = value;
+    }
+
+    public Double getLatitude() {
+        return latitude;
+    }
+
+    public void setLatitude(Double value) {
+        latitude = value;
+    }
+
+    public Double getLongitude() {
+        return longitude;
+    }
+
+    public void setLongitude(Double value) {
+        longitude = value;
+    }
+
+    public String getTradeTags() {
+        return tradeTags;
+    }
+
+    public void setTradeTags(String value) {
+        tradeTags = value;
     }
 }
