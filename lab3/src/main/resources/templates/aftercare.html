@@ -1,0 +1,10 @@
+<!doctype html>
+<html lang="zh-CN" xmlns:th="http://www.thymeleaf.org"><head th:replace="~{fragments :: head('售后与结算')}"></head><body><div class="app"><header th:replace="~{fragments :: header}"></header><main class="content"><h1>售后与结算</h1>
+<section class="panel"><h2 th:text="${order.productName}"></h2><p th:text="${order.status.label}"></p><a th:href="@{/orders/{id}(id=${order.id})}">返回订单</a><p>未发货退款直接原路模拟退回；已发货需提交退货物流、卖家收到退货后退款。48小时未处理自动同意申请，退货退款仍需退回商品。</p></section>
+<form class="panel stack" th:if="${viewer.id == order.buyerId and (order.status.name() == 'PAID' or order.status.name() == 'SHIPPED')}" th:action="@{/aftercare/{id}/request(id=${order.id})}" method="post"><label>申请原因<textarea name="note" maxlength="1000" required></textarea></label><button>申请退款 / 退货退款</button></form>
+<section class="panel" th:if="${refund != null}"><p th:text="${refund.reason}"></p><p th:text="${refund.status}"></p><p th:text="${refund.decision}"></p>
+<form class="stack" th:if="${viewer.id == order.sellerId and refund.status == 'REQUESTED'}" th:action="@{/aftercare/{id}/approve(id=${order.id})}" method="post"><label>处理意见<input name="note" maxlength="1000" required></label><button>同意退款申请</button><button th:formaction="@{/aftercare/{id}/reject(id=${order.id})}">拒绝申请</button></form>
+<form class="stack" th:if="${viewer.id == order.buyerId and refund.status == 'APPROVED_RETURN'}" th:action="@{/aftercare/{id}/return(id=${order.id})}" method="post"><label>退货物流单号<input name="note" maxlength="1000" required></label><button>提交退货物流</button></form>
+<form th:if="${viewer.id == order.sellerId and refund.status == 'RETURNED'}" th:action="@{/aftercare/{id}/received(id=${order.id})}" method="post"><button>确认收到退货并退款</button></form></section>
+<section class="panel" th:if="${settlement != null}"><h2>模拟结算</h2><p th:text="'成交额 ' + ${settlement.grossAmount} + ' / 平台费 ' + ${settlement.fee} + ' / 卖家到账 ' + ${settlement.netAmount}"></p></section>
+</main></div></body></html>

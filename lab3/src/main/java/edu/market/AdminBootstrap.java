@@ -20,10 +20,20 @@ public class AdminBootstrap implements ApplicationRunner {
 
     @Override
     public void run(ApplicationArguments arguments) {
+        String superUser = environment.getProperty("MARKET_SUPER_ADMIN_USER");
+        String superPassword = environment.getProperty("MARKET_SUPER_ADMIN_PASSWORD");
+        if (superUser != null && superPassword != null && accounts.findByUsername(superUser).isEmpty()) {
+            BusinessException.require(superUser.matches("[a-zA-Z0-9_]{3,40}"), "超级管理员用户名格式无效");
+            AccountService.validatePassword(superPassword);
+            Account superAdmin = new Account(superUser, encoder.encode(superPassword), "ADMIN");
+            superAdmin.setSuperAdmin(true);
+            accounts.save(superAdmin);
+        }
+
         String username = environment.getProperty("MARKET_ADMIN_USER");
         String password = environment.getProperty("MARKET_ADMIN_PASSWORD");
         if (username != null && password != null && accounts.findByUsername(username).isEmpty()) {
-            BusinessException.require(username.matches("[a-zA-Z0-9_]{3,40}"), "管理员用户名格式无效");
+            BusinessException.require(username.matches("[a-zA-Z0-9_]{3,40}"), "绠＄悊鍛樼敤鎴峰悕鏍煎紡鏃犳晥");
             AccountService.validatePassword(password);
             accounts.save(new Account(username, encoder.encode(password), "ADMIN"));
         }

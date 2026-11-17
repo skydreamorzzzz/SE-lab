@@ -9,6 +9,8 @@ import jakarta.persistence.Table;
 @Entity
 @Table(name = "accounts")
 public class Account {
+    @Column(nullable = false, columnDefinition = "boolean default false")
+    private boolean superAdmin;
     @Id
     @GeneratedValue
     private Long id;
@@ -62,5 +64,13 @@ public class Account {
 
     public void changePassword(String hash) {
         passwordHash = hash;
+    }
+
+    public boolean getSuperAdmin() {
+        return superAdmin;
+    }
+
+    public void setSuperAdmin(boolean value) {
+        superAdmin = value;
     }
 }

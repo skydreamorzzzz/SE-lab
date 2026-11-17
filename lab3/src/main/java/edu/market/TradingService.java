@@ -17,15 +17,17 @@ public class TradingService {
     private final PurchaseOrderRepository orders;
     private final ReservationRepository reservations;
     private final AccountRepository accountStore;
+    private final FinanceService finance;
 
     public TradingService(AccountService accounts, ProductService products,
-                          PurchaseOrderRepository orders, ReservationRepository reservations, AccountRepository accountStore, ActivityService activities) {
+                          PurchaseOrderRepository orders, ReservationRepository reservations, AccountRepository accountStore, ActivityService activities, FinanceService finance) {
         this.accounts = accounts;
         this.activities = activities;
         this.products = products;
         this.orders = orders;
         this.reservations = reservations;
         this.accountStore = accountStore;
+        this.finance = finance;
     }
 
     public PurchaseOrder buy(String username, Long productId, int quantity, BigDecimal displayedPrice,
@@ -156,6 +158,7 @@ public class TradingService {
                 BusinessException.require(isBuyer, "仅买家可确认收货");
                 state(order, OrderStatus.SHIPPED);
                 order.setStatus(OrderStatus.COMPLETED);
+                finance.settle(order);
             }
             default -> throw new BusinessException("未知订单操作");
         }
@@ -173,6 +176,7 @@ public class TradingService {
         if (order.getStatus() == OrderStatus.SHIPPED && order.getSignedAt() != null
                 && !order.getSignedAt().plus(Duration.ofDays(7)).isAfter(now)) {
             order.setStatus(OrderStatus.COMPLETED);
+                finance.settle(order);
         }
     }
 

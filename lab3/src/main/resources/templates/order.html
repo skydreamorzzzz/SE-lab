@@ -9,4 +9,5 @@
 <div class="inline" th:if="${viewer.id == order.buyerId and order.status.name() == 'SHIPPED'}"><form th:if="${order.signedAt == null}" th:action="@{/orders/{id}/sign(id=${order.id})}" method="post"><button>模拟物流签收</button></form><form th:action="@{/orders/{id}/receive(id=${order.id})}" method="post"><button>确认收货</button></form></div>
 <small th:if="${order.signedAt != null}">已记录物流签收，签收满 7 天自动确认收货。</small></section>
 <form class="panel stack" th:if="${order.status.name() == 'COMPLETED'}" th:action="@{/reviews/{id}(id=${order.id})}" method="post"><h2>交易评价（每方一次）</h2><label>评分<select name="rating"><option>5</option><option>4</option><option>3</option><option>2</option><option>1</option></select></label><label>内容<textarea name="content" maxlength="1000" required></textarea></label><button>提交评价</button></form>
+<a class="button" th:href="@{/aftercare/{id}(id=${order.id})}">售后申请与结算</a>
 </main></div></body></html>
