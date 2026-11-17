@@ -4,8 +4,7 @@
 <head><link href="/css/lab2-home.css" rel="stylesheet"/>
 <meta charset="utf-8"/>
 <meta content="width=device-width,initial-scale=1,viewport-fit=cover" name="viewport"/>
-<title>拾物集 · 二手交易首页原型</title>
-
+<title>拾物集 · 二手交易首页</title>
 <meta name="csrf" th:content="${_csrf.token}"/><meta name="csrf-header" th:content="${_csrf.headerName}"/><meta name="authenticated" th:content="${viewer != null}"/><link href="/css/lab2-integration.css" rel="stylesheet"/><script defer="" src="/js/market.js"></script></head>
 <body>
 <div class="app">
@@ -41,22 +40,11 @@
 </div>
 <div class="product-body"><h2 class="product-title" th:text="${p.name}">复古数码相机 · 九成新</h2><div class="product-desc" th:text="${p.description}">功能完好 / 附原装电池和背带</div><div class="bottom-line"><div><span class="price" th:text="${p.price}">459</span></div><span class="seller"><span class="seller-avatar" th:text="${#strings.substring(p.seller,0,1)}"></span><span th:text="${p.seller}"></span></span></div></div>
 </article>
-
-
-
 </section>
 <div class="empty" id="empty" th:classappend="${#lists.isEmpty(items)} ? 'show' : ''">没有找到匹配的商品，换个关键词试试看吧。</div>
-<div class="page-links" th:if="${result.hasNext() or result.hasPrevious()}"><a th:href="@{/(page=${result.number - 1},keyword=${param.keyword},category=${param.category},sort=${param.sort})}" th:if="${result.hasPrevious()}">上一页</a><span th:text="'第 ' + ${result.number + 1} + ' 页'"></span><a th:href="@{/(page=${result.number + 1},keyword=${param.keyword},category=${param.category},sort=${param.sort})}" th:if="${result.hasNext()}">下一页</a></div></main>
-<nav aria-label="底部导航" class="bottom-nav" th:replace="~{lab2-fragments :: navigation('home')}">
-<button class="nav active" data-tab="首页" onclick="changeTab(this)" type="button"><svg fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" viewbox="0 0 24 24"><path d="m3 10 9-7 9 7v10H3z"></path><path d="M9 20v-7h6v7"></path></svg><span class="nav-label">首页</span></button>
-<button class="nav" data-tab="附近商品" onclick="changeTab(this)" type="button"><svg fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" viewbox="0 0 24 24"><path d="M20 10c0 6-8 12-8 12S4 16 4 10a8 8 0 0 1 16 0z"></path><circle cx="12" cy="10" r="2.6"></circle></svg><span class="nav-label">附近商品</span></button>
-<button class="nav sell-nav" data-tab="出售商品" onclick="openSell()" type="button"><span class="sell-btn"><svg fill="none" stroke="currentColor" stroke-linecap="round" viewbox="0 0 24 24"><path d="M12 4v16M4 12h16"></path></svg></span><span class="nav-label">出售商品</span></button>
-<button class="nav" data-tab="消息" onclick="showToast('消息页面将在后续原型中设计')" type="button"><svg fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" viewbox="0 0 24 24"><path d="M4 5h16v13H9l-5 3V5z"></path><path d="M8 10h8M8 14h5"></path></svg><span class="nav-label">消息</span></button>
-<button class="nav" data-tab="个人资料" onclick="showToast('个人中心将在后续原型中设计')" type="button"><svg fill="none" stroke="currentColor" stroke-linecap="round" viewbox="0 0 24 24"><circle cx="12" cy="8" r="4"></circle><path d="M4.5 21c0-4 3.4-6 7.5-6s7.5 2 7.5 6"></path></svg><span class="nav-label">个人资料</span></button>
-</nav>
+<div class="page-links" th:if="${result.hasNext() or result.hasPrevious()}"><a th:href="@{/(page=${result.number - 1},keyword=${param.keyword},category=${param.category},sort=${param.sort})}" th:if="${result.hasPrevious()}">上一页</a><span th:text="'第 ' + ${result.number + 1} + ' 页'"></span><a th:href="@{/(page=${result.number + 1},keyword=${param.keyword},category=${param.category},sort=${param.sort})}" th:if="${result.hasNext()}">下一页</a></div><div class="page-links"><a href="/ranking">成交榜单</a><a href="/cart">我的购物车</a><a href="/orders">买卖订单</a></div></main>
+<nav aria-label="底部导航" class="bottom-nav" th:replace="~{lab2-fragments :: navigation('home')}"></nav>
 <div class="toast" id="toast" role="status"></div>
-
 </div>
-
 <script defer="" src="/js/lab2-home.js"></script></body>
 </html>

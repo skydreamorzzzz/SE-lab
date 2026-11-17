@@ -3,5 +3,5 @@
 <head th:replace="~{fragments :: head('创建账户')}"></head>
 <body><div class="app"><header th:replace="~{fragments :: header}"></header>
 <main class="content"><h1>创建账户</h1>
-<form class="panel stack" th:action="@{/register}" method="post"><label>用户名<input name="username" pattern="[a-zA-Z0-9_]{3,40}" required></label><label>密码<input type="password" name="password" minlength="8" maxlength="72" required autocomplete="new-password"></label><small>至少 8 位，含大小写字母、数字、特殊字符</small><label>身份<select name="role"><option value="BUYER">买家</option><option value="SELLER">卖家</option></select></label><button>注册</button></form>
+<form class="panel stack" th:action="@{/register}" method="post"><label>用户名<input name="username" pattern="[a-zA-Z0-9_]{3,40}" required></label><label>密码<input type="password" name="password" minlength="8" maxlength="72" required autocomplete="new-password"></label><small>至少 8 位，含大小写字母、数字、特殊字符</small><p>普通账户可同时购买与出售，选择常用身份仅作为偏好。</p><label>常用身份<select name="role"><option value="BUYER">买家</option><option value="SELLER">卖家</option></select></label><button>注册</button></form>
 </main></div></body></html>

@@ -5,7 +5,6 @@
 <meta charset="utf-8"/>
 <meta content="width=device-width, initial-scale=1, viewport-fit=cover" name="viewport"/>
 <title>拾物集 · 发布闲置</title>
-
 <meta name="csrf" th:content="${_csrf.token}"/><meta name="csrf-header" th:content="${_csrf.headerName}"/><meta name="authenticated" th:content="${viewer != null}"/><link href="/css/lab2-integration.css" rel="stylesheet"/><script defer="" src="/js/market.js"></script></head>
 <body>
 <div class="app" id="publishData" th:attr="data-id=${product.id},data-stock=${product.stock},data-revision=${product.listingRevision},data-state=${product.status}">
@@ -72,6 +71,5 @@
 <div aria-labelledby="modalTitle" aria-modal="true" class="modal-back" id="modalBack" role="dialog">
 <div class="modal"><div class="modal-icon"><svg fill="none" height="31" stroke="currentColor" stroke-width="2" viewbox="0 0 24 24" width="31"><path d="M4 12l5 5L20 6"></path></svg></div><h2 id="modalTitle">提交审核成功</h2><p id="modalText">商品已发送至服务器，审核通过后会在商城展示。</p><div class="modal-acts"><button id="modalStay" type="button">查看商品管理</button><button class="primary" id="modalExit" type="button">返回首页</button></div></div>
 </div>
-
 <script th:inline="javascript">window.publishInitial = /*[[${publishInitial}]]*/ {};</script><script defer="" src="/js/lab2-edit.js"></script></body>
 </html>

@@ -5,21 +5,21 @@
 | 需求 | 当前实现/入口 | 对应证据 |
 |---|---|---|
 | REQ-001 | 注册、登录、资料、改密；身份验证页绑定手机号与恢复凭证找回密码 | AccountTest、IdentityMediaTest、Chrome；短信为显式本地模拟 |
-| REQ-002 | BUYER/SELLER/ADMIN；超级管理员为ADMIN权限属性；普通管理员不可改规则和他人商品 | FinanceTest、AuthorizationTest |
-| REQ-003 | 不完整草稿可保存，仅所有卖家可查看，管理员也不能读取草稿 | ProductTest；ProductService.detail |
+| REQ-002 | 普通账号派生BUYER+SELLER双能力（原型普通用户可买卖），ADMIN独立；超级管理员为ADMIN权限属性；普通管理员不可改规则和他人商品 | FinanceTest、AuthorizationTest |
+| REQ-003 | 不完整草稿可保存，仅所属卖家可查看，管理员也不能读取草稿 | ProductTest；ProductService.detail |
 | REQ-004 | 主图、附图、一个视频、两级分类、成色、价格区间、库存及可选信息 | IdentityMediaTest；Chrome媒体发布与可选字段 |
 | REQ-005 | 审核通过/理由驳回到草稿，管理员不能修改正文 | ProductTest、Chrome |
 | REQ-006 | 六种商品状态；下架再提审，违规申诉后回待审核，售罄与补货受控 | ProductTest、ModerationTest、Chrome |
 | REQ-007 | 关键内容/媒体/可选信息变更复审，库存单独调整 | ProductTest；ProductService.save |
 | REQ-008 | 库存0不能买，允许有计划的缺货预约；补货不恢复违规/普通下架商品 | MarketplaceTest |
-| REQ-009 | 关键词/两级分类/价格区间/公开状态组合查询，分页 | MarketplaceTest、PersonalTest、PerformanceTest |
+| REQ-009 | 关键词（名称/品牌/型号）、两级分类、价格、成色、真实距离、卖家累计销量/好评率组合查询及分页 | MarketplaceTest、PersonalTest、PerformanceTest |
 | REQ-010 | 价格/时间/收藏/销量/信誉/成色稳定排序；全站及分类日周月成交榜 | InsightsTest；Chrome榜单；RankingService |
 | REQ-011 | 加购/更新/删除、检索/分组、重新核验失效原因，同直接购买服务下单 | PersonalTest、Chrome购物车结算 |
 | REQ-012 | 同一买家同商品有效预约唯一并合并，计划总量上限、取消后重新排队 | MarketplaceTest、ConcurrencyTest |
 | REQ-013 | 补货FIFO部分满足队首，分配后库存不被普通购买抢占 | MarketplaceTest、Chrome |
 | REQ-014 | 区间报价、卖家接受锁价及库存15分钟，转单不重复扣减，超时释放 | BargainTest、Chrome |
 | REQ-015 | 直接/购物车/议价/预约下单；快照、请求幂等、15分钟未付取消 | MarketplaceTest、BargainTest、PersonalTest、Chrome |
-| REQ-016 | 详情30秒刷新，购买前客户端重新查询，服务端锁内检查价格/状态/库存 | ConcurrencyTest、InsightsTest；availability.js |
+| REQ-016 | 详情30秒刷新，购买前客户端重新查询，服务端锁内检查价格/状态/库存 | ConcurrencyTest、InsightsTest；lab2-detail.js |
 | REQ-017 | 模拟支付、发货、买家收货，非法状态与越权拒绝 | MarketplaceTest、Chrome |
 | REQ-018 | 仅物流签收后7天自动确认；无签收不触发 | MarketplaceTest.autoReceiptRequiresSevenDaysAfterSigned |
 | REQ-019 | 收货后结算，按超级管理员抽成保存快照，售后期间不新增结算 | FinanceTest；Chrome促销结算 |
@@ -40,3 +40,5 @@
 | REQ-034 | 管理员统计返回去标识聚合DTO；他人订单只交易双方可见；低样本金额隐去 | InsightsTest、MarketplaceTest、AuthorizationTest |
 
 定时任务检查周期30秒；性能结果为本机本轮实测，详细数据以evidence中保存的JSON为准。浏览器验收使用隔离测试数据，截图不含真实个人信息；包含测试数据库的备份留在忽略的target目录，不提交远程。
+
+本轮直接迁移原型六页，补充公开留言/卖家回复、审核快照、本人记录弹窗和授权后台DTO；设计及实际浏览器证据见 docs/LAB2-ALIGNMENT.md 与 evidence/design/。

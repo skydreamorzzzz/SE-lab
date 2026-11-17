@@ -5,7 +5,6 @@
 <meta charset="utf-8"/>
 <meta content="width=device-width, initial-scale=1, viewport-fit=cover" name="viewport"/>
 <title>复古数码相机 · 九成新 | 拾物集</title>
-
 <meta name="csrf" th:content="${_csrf.token}"/><meta name="csrf-header" th:content="${_csrf.headerName}"/><meta name="authenticated" th:content="${viewer != null}"/><link href="/css/lab2-integration.css" rel="stylesheet"/><script defer="" src="/js/market.js"></script></head>
 <body>
 <div class="app" id="productData" th:attr="data-id=${product.id},data-price=${actualPrice},data-name=${product.name},data-stock=${product.stock},data-status=${product.status},data-min=${product.minPrice},data-max=${product.maxPrice},data-owned=${viewer != null and viewer.id == product.sellerId},data-trader=${viewer != null and viewer.trader},data-negotiable=${product.negotiable},data-favorite=${card.liked},data-request=${requestKey}">
@@ -47,17 +46,13 @@
 <section class="section description">
 <h2 class="section-heading">商品详细信息</h2>
 <p style="white-space:pre-wrap" th:text="${product.description}">整理房间出一台闲置的复古数码相机，正常使用，无功能故障。机身有少量使用痕迹，镜头干净，按钮反馈正常。适合想尝试日常随手拍、复古数码风格的朋友。</p>
-
 <div class="point-row"><span class="point" th:each="tag : ${tradeTags}" th:text="${tag}"></span></div>
 <div class="detail-grid"><div class="detail-panel"><b>品牌 / 型号</b><p th:text="${product.brand ?: '未填写'} + ' / ' + ${product.modelName ?: '未填写'}">通用复古数码相机</p></div><div class="detail-panel"><b>使用时长</b><p th:text="${product.usageYears ?: '未填写'}">约 1 年</p></div><div class="detail-panel"><b>售后约定</b><p th:text="${product.returnSupported ? '支持退货，请通过订单售后申请' : '交易前请向卖家咨询售后约定'}">交易前可咨询卖家</p></div></div>
 </section>
 <section aria-label="商品评论" class="section comment-section" id="comments">
-<div class="comment-header"><h2 class="section-heading" style="margin-bottom:0">商品评论 <span class="comment-count" id="commentCount">(0)</span></h2><div class="sort-comments"><b>精选</b><span>最新</span></div></div>
-
-
-
+<div class="comment-header"><h2 class="section-heading" style="margin-bottom:0">商品评论 <span class="comment-count" id="commentCount">(0)</span></h2><div class="sort-comments"><b onclick="sortComments(false)" onkeydown="if(event.key==='Enter')this.click()" role="button" tabindex="0">精选</b><span onclick="sortComments(true)" onkeydown="if(event.key==='Enter')this.click()" role="button" tabindex="0">最新</span></div></div>
 <div id="commentList"></div><form class="comment-compose" id="commentForm" th:if="${viewer != null and viewer.trader}"><label for="commentContent">向卖家留言</label><textarea id="commentContent" maxlength="1000" placeholder="咨询商品细节、配件或同城交易" required=""></textarea><button class="confirm-btn" type="submit">发布留言</button></form><a href="/login" th:if="${viewer == null}">登录后向卖家留言</a></section>
-<section class="section"><h2 class="section-heading">交易评价</h2><p th:if="${#lists.isEmpty(reviews)}">暂无交易评价</p><article class="comment" th:each="review : ${reviews}"><div class="comment-avatar">评</div><div class="comment-body"><div class="comment-top"><b th:text="${review.rating} + ' / 5'"></b><span th:text="'用户 #' + ${review.authorId}"></span></div><p th:text="${review.content}"></p></div></article></section><section class="section product-extra-actions" th:if="${viewer != null and viewer.trader}"><button class="action-btn bargain" onclick="addToCart()" th:disabled="${!product.negotiable}" type="button">加入购物车</button><a href="/moderation">举报此商品（编号见上方）</a><a href="/bargains">我的议价</a></section></main>
+<section class="section transaction-reviews"><h2 class="section-heading">交易评价</h2><p th:if="${#lists.isEmpty(reviews)}">暂无交易评价</p><article class="comment" th:each="review : ${reviews}"><div class="comment-avatar">评</div><div class="comment-body"><div class="comment-top"><b th:text="${review.rating} + ' / 5'"></b><span th:text="'用户 #' + ${review.authorId}"></span></div><p th:text="${review.content}"></p></div></article></section><section class="section product-extra-actions" th:if="${viewer != null and viewer.trader}"><button class="action-btn bargain" onclick="addToCart()" th:disabled="${viewer.id == product.sellerId or product.status.name() != 'ON_SALE'}" type="button">加入购物车</button><a href="/moderation">举报此商品（编号见上方）</a><a href="/bargains">我的议价</a></section></main>
 </div>
 <nav aria-label="固定商品操作栏" class="fixed-actions">
 <div class="left-actions">
@@ -76,6 +71,5 @@
 </div>
 </div>
 <div aria-live="polite" class="toast" id="toast" role="status"></div>
-
 <script defer="" src="/js/lab2-detail.js"></script></body>
 </html>

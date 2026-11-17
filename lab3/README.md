@@ -1,5 +1,7 @@
 # 拾物集 · 二手交易系统
 
+六个主要页面直接基于 Lab 2 原始HTML/CSS/JavaScript迁移，保留布局、图标、卡片、筛选、弹窗及审核抽屉。普通账户现在可同时购买与出售。
+
 Java 21 / Spring Boot 3.5 / Maven / Thymeleaf / JPA / H2 文件数据库。基于原实验一需求和实验二“拾物集”原型继续开发，所有开发在原 Git 仓库的 `main` 上进行。此文件是运行说明，不是实验报告。
 
 ## 启动与构建
@@ -35,7 +37,7 @@ cd E:\lab3\implementation\lab3
 6. 售后：订单“售后申请与结算”入口。未发货直接退款；已发货及已收货需要退货。卖家同意后买家填写退货物流，卖家确认收货才退款并恢复库存；已结算订单退货退款会冲正原结算并保留记录。拒绝后恢复原履约状态。48小时未处理自动同意，退货仍须实际走完模拟退回流程。
 7. 社区：商品收藏、关注卖家、单向屏蔽、浏览/搜索历史在个人中心管理。屏蔽仅影响当前用户，不通知卖家，不删历史订单。购物车打开时重新核验失效原因，关键操作仍由服务端校验。
 8. 治理：举报/申诉页提交商品或账户编号及原因，可上传图片。同一人同一对象每上海自然日最多一次。举报不自动下架，管理员单独处置并反馈；商品申诉通过回到待审核，不能直接上架。封禁保留订单，已登录会话也受限制，可继续申诉。
-9. 榜单与统计：首页进入全站/分类日周月成交榜。管理员统计仅返回聚合数据，1–4笔样本合并并隐去金额/件数；普通管理员无法查看他人的单笔订单、手机号或地址。
+9. 榜单与统计：首页底部进入全站/分类日周月成交榜。管理员统计仅返回聚合数据，1–4笔样本合并并隐去金额/件数；普通管理员无法查看他人的单笔订单、手机号或地址。
 10. 账户验证：身份验证页生成一次性恢复凭证，离线保存；登录页可使用凭证重设密码。绑定手机号先验证当前密码，再核对5分钟验证码，最多5次尝试。
 
 15分钟支付/议价超时、48小时退款超时和签收7天自动收货由30秒周期任务处理；无物流签收不会自动收货。所有金额、库存、角色和状态在 Service 层最终校验，核心事务使用商品→订单锁顺序。
@@ -61,7 +63,15 @@ $env:PLAYWRIGHT_MODULE = "$PWD/target/browser/node_modules/playwright"
 node scripts/browser-smoke.cjs
 ```
 
-需 Chrome（可设置 `CHROME_PATH`）及 Java（可设置 `JAVA_HOME`）。脚本在18080端口启动独立文件数据库，生成随机验收账号，执行两轮完整页面流程及进程重启恢复；结果和截图在 `target/browser-evidence`。其中备份含测试账号与资料，留在 target，不提交。仓库 `evidence/` 只保留经过挑选的开发测试结果和截图。
+需 Chrome（可设置 `CHROME_PATH`）及 Java 21（可设置 `JAVA_HOME`）。脚本在18080端口启动独立文件数据库，使用随机验收账号，检查六个实际页面、完整交易、预约、退款、治理、上传和重启恢复；结果及截图位于 `target/design-validation/<运行编号>`。`browser-smoke.cjs` 现在调用同一套设计验收脚本。备份、数据库、恢复凭据与日志只保留于被忽略的 target。仓库 `evidence/design/` 仅保留已挑选的参考/实际截图、聚合测试结果及原文件哈希。
+
+原HTML默认位于本工作目录的实验二交付路径；可通过 `LAB2_UI_PATH` 指定其他UI界面目录。原文件缺失时浏览器脚本会明确记录跳过视觉比较，仍执行业务流程；本轮验收已实际使用全部六份原HTML进行比较。源码与原样式核对：
+
+```powershell
+python scripts/check-design-assets.py
+```
+
+迁移对应、主要调整及实际验证记录见 [docs/LAB2-ALIGNMENT.md](docs/LAB2-ALIGNMENT.md)。
 
 启动脚本回归：`node scripts/test-launcher.cjs` 会使用 Windows PowerShell 5.1，在隔离数据库上验证普通管理员与超级管理员的安全密码输入、实际启动和登录。设置 `POWERSHELL7_PATH` 可追加 PowerShell 7 场景；不修改系统执行策略。
 
@@ -74,8 +84,8 @@ node scripts/browser-smoke.cjs
 ## 代码位置
 
 - `src/main/java/edu/market`：实体、Repository、Service、Controller与安全/定时任务；类名体现职责，依赖为Controller→Service→Repository。
-- `src/main/resources/templates`：复用实验二样式的真实Thymeleaf页面。
-- `src/main/resources/static`：CSS、本地图例及可用性刷新脚本。
+- `src/main/resources/templates`：六份原版HTML直接迁移的Thymeleaf页面，以及沿用同一组件语言的订单/退款等扩展页面。
+- `src/main/resources/static`：六份完整原版CSS、原SVG插画、少量集成/扩展样式及真实交互脚本。
 - `src/test/java/edu/market`：业务边界、并发、HTTP权限、旧数据迁移、在线备份恢复与性能验收。
 - `REQUIREMENTS-COVERAGE.md`：34项需求对应实现、验证和模拟边界。
 - `DEVELOPMENT.md`：真实模块开发、设计调整、构建与Git记录，供本人独立撰写实验报告使用。

@@ -5,7 +5,6 @@
 <meta charset="utf-8"/>
 <meta content="width=device-width, initial-scale=1, viewport-fit=cover" name="viewport"/>
 <title>拾物集 · 管理后台</title>
-
 <meta name="csrf" th:content="${_csrf.token}"/><meta name="csrf-header" th:content="${_csrf.headerName}"/><meta name="authenticated" th:content="${viewer != null}"/><link href="/css/lab2-integration.css" rel="stylesheet"/><script defer="" src="/js/market.js"></script></head>
 <body>
 <svg aria-hidden="true" style="position:absolute;width:0;height:0;overflow:hidden" xmlns="http://www.w3.org/2000/svg">
@@ -52,6 +51,5 @@
 <div aria-hidden="true" class="backdrop" id="backdrop"></div>
 <aside aria-hidden="true" aria-labelledby="drawerTitle" aria-modal="true" class="drawer" id="drawer" role="dialog"><div class="drawer-top"><div><strong id="drawerTitle">审核商品</strong><small id="drawerSubtitle">查看信息与处理申请</small></div><button aria-label="关闭详情面板" class="iconbtn" id="drawerClose"><svg><use href="#i-close"></use></svg></button></div><div class="drawer-scroll" id="drawerContent"></div><div class="drawer-footer" id="drawerActions"></div></aside>
 <div aria-live="polite" class="toast" id="toast" role="status"></div>
-
 <script defer="" src="/js/lab2-admin.js"></script></body>
 </html>

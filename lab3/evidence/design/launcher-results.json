@@ -1,0 +1,17 @@
+{
+  "passed": true,
+  "scenarios": [
+    {
+      "shell": "powershell.exe",
+      "setup": "admin",
+      "startup": true,
+      "login": true
+    },
+    {
+      "shell": "powershell.exe",
+      "setup": "super-admin",
+      "startup": true,
+      "login": true
+    }
+  ]
+}

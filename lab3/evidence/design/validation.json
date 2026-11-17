@@ -1,0 +1,23 @@
+{
+  "build": "mvn package: BUILD SUCCESS",
+  "tests": 43,
+  "failures": 0,
+  "errors": 0,
+  "checkstyleViolations": 0,
+  "source": {
+    "mainJavaFiles": 79,
+    "mainNonblankNoncommentLines": 4859,
+    "testJavaFiles": 16,
+    "testNonblankNoncommentLines": 1614
+  },
+  "runtime": {
+    "port": 8080,
+    "httpStatus": 200,
+    "existingDatabaseStarted": true
+  },
+  "screenshots": {
+    "desktopReferenceAndActual": 12,
+    "mobileActual": 6
+  },
+  "method": "JUnit and actual Chrome + original HTML comparisons; code counted using scripts/count-source.py"
+}

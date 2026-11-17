@@ -6,10 +6,10 @@ const { pathToFileURL } = require('node:url');
 const crypto = require('node:crypto');
 const assert = require('node:assert/strict');
 const root = path.resolve(__dirname, '..');
-const stage = process.argv.find(a => a.startsWith('--stage='))?.split('=')[1] || 'all';
+const stage = process.argv.find(a => a.startsWith('--stage='))?.split('=')[1] || 'full';
 const output = path.join(root, 'target/design-validation', Date.now().toString(36));
 fs.mkdirSync(output, { recursive: true });
-const source = path.resolve(root, '../../过去的lab实验/lab2/实验2_241220086_唐天洋/UI界面');
+const source = process.env.LAB2_UI_PATH || path.resolve(root, '../../过去的lab实验/lab2/实验2_241220086_唐天洋/UI界面');
 const suffix = Date.now().toString(36), password = 'Design!9aA' + crypto.randomBytes(10).toString('hex');
 const users = { seller:'designseller_' + suffix, buyer:'designbuyer_' + suffix, admin:'designadmin_' + suffix, super:'designsuper_' + suffix };
 const base = 'http://127.0.0.1:18080';
@@ -54,13 +54,14 @@ async function rects(page, selectors) {
   })),selectors);
 }
 async function compare(page, original, actual, name, selectors) {
+  if(!fs.existsSync(path.join(source,original+'.html'))){comparisons.push({page:name,skipped:'Original HTML is unavailable; set LAB2_UI_PATH for visual comparisons'});await page.goto(base+actual);return;}
   const reference=await browser.newPage({viewport:{width:1280,height:1000}});
   await reference.goto(pathToFileURL(path.join(source,original+'.html')).href);await reference.evaluate(()=>document.fonts.ready);
   await reference.screenshot({path:path.join(output,name+'-reference.png'),fullPage:true});const expected=await rects(reference,selectors);
   await page.goto(base+actual);await page.evaluate(()=>document.fonts.ready);await page.screenshot({path:path.join(output,name+'-actual.png'),fullPage:true});
   const observed=await rects(page,selectors);let maxDifference=0;
   for(const selector of selectors) { assert(expected[selector]&&observed[selector], 'Missing original component '+selector);for(const key of ['x','y','width','height'])maxDifference=Math.max(maxDifference,Math.abs(expected[selector][key]-observed[selector][key])); }
-  comparisons.push({page:name,original:original+'.html',selectors,maxGeometryDifferencePx:maxDifference});await reference.close();
+  comparisons.push({page:name,original:original+'.html',selectors,expected,observed,maxGeometryDifferencePx:maxDifference});await reference.close();
 }
 async function seed(seller,admin) {
   const fixtures=[['复古数码相机 · 九成新','数码电子/相机','camera','459','9成新','功能完好 / 附原装电池和背带'],['无线降噪耳机 · 头戴式','影音设备/耳机','headphones','268','近全新','音质清晰 / 有收纳袋 / 可小刀'],['87 键机械键盘 · 奶白色','办公学习/键盘','keyboard','129','9成新','全键无冲 / 送防尘罩 / 自提优先'],['奶油风落地灯 · 暖光','家居生活/灯具','lamp','86','8成新','房间氛围感 / 正常使用 / 可同城']];
@@ -114,6 +115,22 @@ async function workspaceChecks(seller,buyer,admin,ids){
  const denied=await buyer.request.get(base+'/api/admin/dashboard');assert.equal(denied.status(),403);assert.equal((await buyer.request.post(base+'/api/profile',{form:{displayName:'unauthorized'}})).status(),403);
  checks.push('original profile cards/modals and admin sidebar/tabs/right drawer; real profile records, audit history, report feedback, punishment, appeal, private statistics and authorization');
 }
+async function extraChecks(seller,buyer,admin,ids){
+ await post(seller,'/seller/products/'+ids[3]+'/stock',{delta:-3});await buyer.goto(base+'/products/'+ids[3]);await buyer.getByRole('button',{name:'缺货预约',exact:true}).click();await buyer.locator('#confirmBtn').click();await buyer.waitForURL(base+'/reservations');assert.equal(await buyer.getByRole('button',{name:'确认已分配数量并创建订单'}).count(),0);await buyer.getByRole('button',{name:'取消预约',exact:true}).click();assert((await buyer.locator('body').innerText()).includes('已取消'));
+ await buyer.goto(base+'/products/'+ids[3]);await buyer.evaluate(()=>openModal('buy'));await buyer.locator('#confirmBtn').click();await buyer.waitForURL(base+'/reservations');await post(seller,'/seller/products/'+ids[3]+'/stock',{delta:1});await seller.goto(base+'/reservations');assert.equal(await seller.getByRole('button',{name:'取消预约',exact:true}).count(),0);await seller.getByRole('button',{name:'确认已分配数量并创建订单'}).click();const reservedOrder=seller.url();await buyer.goto(reservedOrder);await buyer.getByRole('button',{name:'取消订单',exact:true}).click();
+ await seller.goto(base+'/bargains');await seller.getByRole('button',{name:'接受并锁库存',exact:true}).first().click();await buyer.goto(base+'/bargains');await buyer.getByRole('button',{name:'按议定价格下单',exact:true}).click();await buyer.getByRole('button',{name:'模拟支付',exact:true}).click();await buyer.getByRole('link',{name:'售后申请与结算'}).click();await buyer.locator('[name=note]').fill('原型改造后未发货退款验收');await buyer.getByRole('button',{name:'申请退款 / 退货退款',exact:true}).click();const refund=buyer.url();await seller.goto(refund);await seller.locator('[name=note]').fill('同意未发货退款');await seller.getByRole('button',{name:'同意退款申请',exact:true}).click();assert((await seller.locator('main').innerText()).includes('已退款'));
+ await buyer.goto(base+'/products/'+ids[0]);await buyer.getByRole('button',{name:'加入购物车',exact:true}).click();await buyer.waitForURL(base+'/cart');await buyer.getByRole('button',{name:'结算此商品',exact:true}).click();const order=buyer.url();await buyer.getByRole('button',{name:'模拟支付',exact:true}).click();await seller.goto(order);await seller.getByRole('button',{name:'模拟发货',exact:true}).click();await buyer.goto(order);await buyer.getByRole('link',{name:'售后申请与结算'}).click();await buyer.locator('[name=note]').fill('原型改造后退货物流验收');await buyer.getByRole('button',{name:'申请退款 / 退货退款',exact:true}).click();const returned=buyer.url();await seller.goto(returned);await seller.locator('[name=note]').fill('同意退货');await seller.getByRole('button',{name:'同意退款申请',exact:true}).click();await buyer.goto(returned);await buyer.locator('[name=note]').fill('SIM-DESIGN-RETURN');await buyer.getByRole('button',{name:'提交退货物流',exact:true}).click();await seller.goto(returned);await seller.getByRole('button',{name:'确认收到退货并退款',exact:true}).click();assert((await seller.locator('main').innerText()).includes('已退款'));await seller.screenshot({path:path.join(output,'refund-actual.png'),fullPage:true});
+ await buyer.goto(base+'/products/'+ids[0]);await buyer.locator('.seller-person').click();await buyer.getByRole('button',{name:'关注卖家',exact:true}).click();await buyer.goto(base+'/products/'+ids[0]);await buyer.locator('.seller-person').click();await buyer.getByRole('button',{name:'屏蔽卖家',exact:true}).click();await buyer.goto(base+'/');assert.equal(await buyer.locator('.product').count(),0);await buyer.goto(base+'/personal?kind=BLOCK');await buyer.getByRole('button',{name:'删除 / 取消关系',exact:true}).click();
+ await seller.goto(base+'/seller/edit');const png=Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+aF1sAAAAASUVORK5CYII=','base64');await seller.locator('#photoInput').setInputFiles({name:'design-photo.png',mimeType:'image/png',buffer:png});await seller.waitForFunction(()=>document.querySelectorAll('.photo').length===1);await seller.locator('#productName').fill('真实上传验收草稿');await seller.locator('#saveTop').click();await seller.waitForFunction(()=>Boolean(document.querySelector('#publishData').dataset.id));const draftId=await seller.locator('#publishData').getAttribute('data-id');await seller.goto(base+'/seller/edit?id='+draftId);assert.equal(await seller.locator('.photo').count(),1);
+ await buyer.goto(base+'/identity');await buyer.locator('form[action="/identity/recovery"] [name=password]').fill(password);await buyer.getByRole('button',{name:'验证并生成恢复凭证',exact:true}).click();const recovery=await buyer.locator('pre').innerText();await buyer.locator('form[action="/identity/challenge"] [name=password]').fill(password);await buyer.locator('[name=phone]').fill('13800000000');await buyer.getByRole('button',{name:'本地模拟发送验证码',exact:true}).click();const code=await buyer.locator('section.panel b').innerText();await buyer.locator('[name=code]').fill(code);await buyer.getByRole('button',{name:'核验并绑定',exact:true}).click();assert((await buyer.locator('main').innerText()).includes('手机号绑定成功'));
+ const superPage=await browser.newPage();await login(superPage,'super');await superPage.goto(base+'/admin/platform');const [download]=await Promise.all([superPage.waitForEvent('download'),superPage.getByRole('button',{name:'下载在线备份',exact:true}).click()]);await download.saveAs(path.join(output,'private-backup.zip'));await superPage.close();
+ for(const [page,route]of[[buyer,'/messages'],[buyer,'/orders'],[seller,'/seller/products'],[buyer,'/ranking'],[admin,'/admin/activities']]){const response=await page.goto(base+route);assert.equal(response.status(),200,'Page '+route);assert.equal(await page.locator('.bottom-nav').count(),1);}
+ await buyer.goto(base+'/recover');await buyer.locator('[name=username]').fill(users.buyer);await buyer.locator('[name=code]').fill(recovery);await buyer.locator('[name=password]').fill(password);await buyer.getByRole('button',{name:'验证并重设密码',exact:true}).click();
+ for(const [page,route,name]of[[buyer,'/','home'],[buyer,'/search','search'],[buyer,'/products/'+ids[0],'detail'],[seller,'/seller/edit','publish'],[buyer,'/profile','profile'],[admin,'/admin','admin']]){await page.setViewportSize({width:390,height:844});await page.goto(base+route);await page.waitForTimeout(250);await page.screenshot({path:path.join(output,name+'-mobile.png'),fullPage:true});const width=await page.evaluate(()=>({scroll:document.documentElement.scrollWidth,client:document.documentElement.clientWidth}));assert(width.scroll<=width.client+1,'Mobile document overflow: '+name+' '+JSON.stringify(width));await page.setViewportSize({width:1280,height:1000});}
+ // Restart the same isolated file database, then authenticate and verify persisted profile, messages and media.
+ await new Promise(resolve=>{app.once('close',resolve);app.kill();});start();await ready();await login(buyer,'buyer');await buyer.goto(base+'/profile');assert((await buyer.locator('.identity-main').innerText()).includes('原型个人中心实际保存'));await login(seller,'seller');await seller.goto(base+'/seller/edit?id='+draftId);assert.equal(await seller.locator('.photo').count(),1);
+ checks.push('reservation/cancel/restock/seller-only confirmation; bargain order; cart; direct and return refunds; follow/block/unblock; real media draft; phone/recovery/backup; all six mobile pages without horizontal overflow; persistent restart');
+}
 async function run() {
   start();await ready();browser=await chromium.launch({executablePath:process.env.CHROME_PATH||'C:/Program Files/Google/Chrome/Application/chrome.exe',headless:true});
   const seller=await browser.newPage({viewport:{width:1280,height:1000}}),buyer=await browser.newPage({viewport:{width:1280,height:1000}}),admin=await browser.newPage({viewport:{width:1280,height:1000}});
@@ -122,6 +139,7 @@ async function run() {
   await catalogChecks(seller,buyer,admin,ids);
   if(stage!=='catalog')await productChecks(seller,buyer,admin,ids);
   if(stage==='workspace'||stage==='full')await workspaceChecks(seller,buyer,admin,ids);
+  if(stage==='full')await extraChecks(seller,buyer,admin,ids);
   assert.deepEqual(errors,[]);
   const result={passed:true,stage,checks,comparisons,consoleErrors:errors};fs.writeFileSync(path.join(output,'results.json'),JSON.stringify(result,null,2)+'\n');console.log(JSON.stringify(result,null,2));
 }

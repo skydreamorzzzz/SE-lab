@@ -19,11 +19,13 @@ public class DesignViewService {
     private final AccountRepository accounts;
     private final PersonalRepository personal;
     private final EntityManager database;
+    private final FinanceService finance;
 
-    public DesignViewService(AccountRepository accounts, PersonalRepository personal, EntityManager database) {
+    public DesignViewService(AccountRepository accounts, PersonalRepository personal, EntityManager database, FinanceService finance) {
         this.accounts = accounts;
         this.personal = personal;
         this.database = database;
+        this.finance = finance;
     }
 
     public List<Card> cards(List<Product> products, String username, Double latitude, Double longitude) {
@@ -39,7 +41,7 @@ public class DesignViewService {
         return products.stream().map(p -> {
             Account seller = sellers.get(p.getSellerId());
             Metric metric = metrics.get(p.getSellerId());
-            return new Card(p.getId(), p.getName(), p.getCategory(), p.getMinPrice(), p.getMaxPrice(),
+            return new Card(p.getId(), p.getName(), p.getCategory(), p.getMinPrice() == null ? null : finance.price(p.getMinPrice()), p.getMaxPrice(),
                     p.getDescription(), p.getConditionLabel(), p.getImageUrl(), p.getStatus().name(), p.getStatus().getLabel(),
                     p.getStock(), p.getSellerId(), seller.getDisplayName(), seller.getCity(), metric.totalSold(), metric.recentSold(),
                     metric.score(), metric.positiveRate(), metric.reviewCount(), Geo.distance(latitude, longitude, p.getLatitude(), p.getLongitude()),

@@ -1,0 +1,122 @@
+{
+  "passed": true,
+  "originalFiles": [
+    {
+      "file": "实验报告.pdf",
+      "unchanged": true
+    },
+    {
+      "file": "UI界面\\主页.html",
+      "unchanged": true
+    },
+    {
+      "file": "UI界面\\主页.png",
+      "unchanged": true
+    },
+    {
+      "file": "UI界面\\出售商品.html",
+      "unchanged": true
+    },
+    {
+      "file": "UI界面\\出售商品.png",
+      "unchanged": true
+    },
+    {
+      "file": "UI界面\\商品展示.html",
+      "unchanged": true
+    },
+    {
+      "file": "UI界面\\商品展示.png",
+      "unchanged": true
+    },
+    {
+      "file": "UI界面\\搜索页面.html",
+      "unchanged": true
+    },
+    {
+      "file": "UI界面\\搜索页面.png",
+      "unchanged": true
+    },
+    {
+      "file": "UI界面\\用户资料.html",
+      "unchanged": true
+    },
+    {
+      "file": "UI界面\\用户资料.png",
+      "unchanged": true
+    },
+    {
+      "file": "UI界面\\管理员后台.html",
+      "unchanged": true
+    },
+    {
+      "file": "UI界面\\管理员后台.png",
+      "unchanged": true
+    },
+    {
+      "file": "UML\\UML时序图.png",
+      "unchanged": true
+    },
+    {
+      "file": "UML\\UML时序图.puml",
+      "unchanged": true
+    },
+    {
+      "file": "UML\\UML状态图.png",
+      "unchanged": true
+    },
+    {
+      "file": "UML\\UML状态图.puml",
+      "unchanged": true
+    },
+    {
+      "file": "UML\\UML类图.png",
+      "unchanged": true
+    },
+    {
+      "file": "UML\\UML类图.puml",
+      "unchanged": true
+    },
+    {
+      "file": "UML\\UML组件图.png",
+      "unchanged": true
+    },
+    {
+      "file": "UML\\UML组件图.puml",
+      "unchanged": true
+    }
+  ],
+  "reusedStylesheets": [
+    {
+      "source": "主页.html",
+      "asset": "lab2-home.css",
+      "allOriginalRulesPreserved": true
+    },
+    {
+      "source": "搜索页面.html",
+      "asset": "lab2-search.css",
+      "allOriginalRulesPreserved": true
+    },
+    {
+      "source": "商品展示.html",
+      "asset": "lab2-detail.css",
+      "allOriginalRulesPreserved": true
+    },
+    {
+      "source": "出售商品.html",
+      "asset": "lab2-edit.css",
+      "allOriginalRulesPreserved": true
+    },
+    {
+      "source": "用户资料.html",
+      "asset": "lab2-profile.css",
+      "allOriginalRulesPreserved": true
+    },
+    {
+      "source": "管理员后台.html",
+      "asset": "lab2-admin.css",
+      "allOriginalRulesPreserved": true
+    }
+  ],
+  "method": "Original files: SHA-256; extracted full CSS: compare after normalizing line endings and trailing whitespace only"
+}

@@ -5,7 +5,6 @@
 <meta charset="utf-8"/>
 <meta content="width=device-width, initial-scale=1, viewport-fit=cover" name="viewport"/>
 <title>拾物集 · 个人中心</title>
-
 <meta name="csrf" th:content="${_csrf.token}"/><meta name="csrf-header" th:content="${_csrf.headerName}"/><meta name="authenticated" th:content="${viewer != null}"/><link href="/css/lab2-integration.css" rel="stylesheet"/><script defer="" src="/js/market.js"></script></head>
 <body>
 <svg aria-hidden="true" style="position:absolute;width:0;height:0;overflow:hidden" xmlns="http://www.w3.org/2000/svg">
@@ -32,7 +31,7 @@
 <main class="main">
 <div class="page-title"><h1>个人中心</h1><span>管理我的闲置和交易</span></div>
 <section aria-label="个人资料概览" class="profile-card">
-<div class="identity"><span aria-label="示例用户头像" class="avatar"><svg viewbox="0 0 100 100"><circle cx="50" cy="57" fill="#f6b98f" r="44"></circle><path d="M16 46c0-28 13-35 34-35s34 9 34 35c-5-9-17-17-34-17S21 37 16 46Z" fill="#8e6557"></path><circle cx="37" cy="55" fill="#624c48" r="3.3"></circle><circle cx="63" cy="55" fill="#624c48" r="3.3"></circle><path d="M44 70q6 6 13 0" fill="none" stroke="#a65b52" stroke-linecap="round" stroke-width="3"></path></svg><i class="avatar-dot"></i></span><div class="identity-main"><h2><span th:text="${viewer.displayName}"></span> <span class="identity-tag" th:text="${viewer.banned ? '账户受限' : (viewer.trader ? '普通用户' : '管理员')}">信誉良好</span></h2><p th:text="${viewer.city == null or viewer.city == '' ? '尚未填写地区' : viewer.city}">南京 · 校园闲置爱好者</p><div class="hint" th:text="${viewer.bio == null or viewer.bio == '' ? '让闲置找到更好的归宿 ✨' : viewer.bio}">让闲置找到更好的归宿 ✨</div></div></div>
+<div class="identity"><span aria-label="默认用户头像" class="avatar"><svg viewbox="0 0 100 100"><circle cx="50" cy="57" fill="#f6b98f" r="44"></circle><path d="M16 46c0-28 13-35 34-35s34 9 34 35c-5-9-17-17-34-17S21 37 16 46Z" fill="#8e6557"></path><circle cx="37" cy="55" fill="#624c48" r="3.3"></circle><circle cx="63" cy="55" fill="#624c48" r="3.3"></circle><path d="M44 70q6 6 13 0" fill="none" stroke="#a65b52" stroke-linecap="round" stroke-width="3"></path></svg><i class="avatar-dot"></i></span><div class="identity-main"><h2><span th:text="${viewer.displayName}"></span> <span class="identity-tag" th:text="${viewer.banned ? '账户受限' : (viewer.trader ? '普通用户' : '管理员')}">信誉良好</span></h2><p th:text="${viewer.city == null or viewer.city == '' ? '尚未填写地区' : viewer.city}">南京 · 校园闲置爱好者</p><div class="hint" th:text="${viewer.bio == null or viewer.bio == '' ? '让闲置找到更好的归宿 ✨' : viewer.bio}">让闲置找到更好的归宿 ✨</div></div></div>
 <button class="profile-link" onclick="showModal('详细资料')" type="button">详细资料 <svg><use href="#i-chevron"></use></svg></button>
 </section>
 <section aria-labelledby="shortcuts-title" class="section"><div class="section-head"><div class="title-bar"><h2 id="shortcuts-title">我的足迹</h2></div><small>把喜欢的好物收进这里</small></div><div class="shortcuts">
@@ -54,16 +53,9 @@
 <a class="utility" href="/cart">购物车</a><a class="utility" href="/reservations">商品预约</a><a class="utility" href="/bargains">议价记录</a><a class="utility" href="/admin" th:if="${viewer.role == 'ADMIN'}">管理后台</a><form class="utility" method="post" th:action="@{/logout}"><button>退出登录</button></form></div></section>
 <div class="footer-note">拾物集 · 让每一件闲置都物有所值</div>
 </main>
-<nav aria-label="底部导航" class="bottom-nav" th:replace="~{lab2-fragments :: navigation('profile')}">
-<a class="nav" href="secondhand_marketplace_home.html"><svg><use href="#i-home"></use></svg><span>首页</span></a>
-<a class="nav" href="secondhand_marketplace_home.html?tab=nearby"><svg><use href="#i-pin"></use></svg><span>附近商品</span></a>
-<a class="nav sell-nav" href="secondhand_marketplace_sell.html"><span class="sell-btn"><svg><use href="#i-plus"></use></svg></span><span>出售商品</span></a>
-<button class="nav" onclick="showModal('消息通知')"><svg><use href="#i-chat"></use></svg><span>消息</span></button>
-<button aria-current="page" class="nav active" type="button"><svg><use href="#i-user"></use></svg><span>个人资料</span></button>
-</nav>
+<nav aria-label="底部导航" class="bottom-nav" th:replace="~{lab2-fragments :: navigation('profile')}"></nav>
 </div>
 <div aria-hidden="true" class="overlay" id="overlay" onclick="if(event.target===this)closeModal()"><div aria-labelledby="modalTitle" aria-modal="true" class="modal" role="dialog"><div class="modal-head"><h2 id="modalTitle">我的收藏</h2><button aria-label="关闭" class="modal-close" onclick="closeModal()">×</button></div><p class="modal-caption" id="modalCaption">正在读取我的记录</p><div id="modalBody"></div><div class="modal-foot"><button class="primary" onclick="closeModal()">完成</button></div></div></div>
 <div aria-live="polite" class="toast" id="toast" role="status"></div>
-
 <script defer="" src="/js/lab2-profile.js"></script></body>
 </html>

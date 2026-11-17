@@ -236,6 +236,7 @@ public class WebController {
             items = reservations.findByBuyerIdOrderByIdDesc(actor.getId());
         }
         model.addAttribute("reservations", items);
+        model.addAttribute("ownedProductIds", productStore.findBySellerIdOrderByIdDesc(actor.getId()).stream().map(Product::getId).toList());
         return "reservations";
     }
 
