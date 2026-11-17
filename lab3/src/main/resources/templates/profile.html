@@ -1,0 +1,9 @@
+<!doctype html>
+<html lang="zh-CN" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments :: head('个人中心')}"></head>
+<body><div class="app"><header th:replace="~{fragments :: header}"></header>
+<main class="content"><h1>个人中心</h1>
+<p class="notice" th:if="${param.saved}">已保存</p><p th:text="'当前身份：' + ${viewer.role}"></p>
+<form class="panel stack" th:action="@{/profile}" method="post"><label>昵称<input name="displayName" th:value="${viewer.displayName}" maxlength="60" required></label><label>收货地址<textarea name="address" maxlength="200" th:text="${viewer.address}"></textarea></label><button>保存资料</button></form>
+<form class="panel stack" th:action="@{/profile/password}" method="post"><label>原密码<input type="password" name="oldPassword" required></label><label>新密码<input type="password" name="newPassword" minlength="8" maxlength="72" required></label><button>修改密码</button></form>
+</main></div></body></html>

@@ -1,0 +1,7 @@
+<!doctype html>
+<html lang="zh-CN" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments :: head('我的订单')}"></head>
+<body><div class="app"><header th:replace="~{fragments :: header}"></header>
+<main class="content"><h1>我的订单</h1>
+<p th:if="${#lists.isEmpty(orders)}">暂无订单</p><section class="panel" th:each="o : ${orders}"><a th:href="@{/orders/{id}(id=${o.id})}"><h2 th:text="'#' + ${o.id} + ' ' + ${o.productName}"></h2><p th:text="${o.status.label} + ' · ¥' + ${o.total}"></p><span>查看详情与操作 →</span></a></section>
+</main></div></body></html>

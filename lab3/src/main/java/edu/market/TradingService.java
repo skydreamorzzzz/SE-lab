@@ -210,14 +210,7 @@ public class TradingService {
     }
 
     private void allocate(Product product) {
-        if (!products.isPublic(product)) {
-            return;
-        }
-        for (Reservation item : active(product.getId())) {
-            int allocated = Math.min(product.getStock(), item.getQuantity() - item.getAllocated());
-            item.setAllocated(item.getAllocated() + allocated);
-            product.setStock(product.getStock() - allocated);
-        }
+        products.allocateStock(product);
     }
 
     private List<Reservation> active(Long productId) {

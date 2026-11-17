@@ -1,0 +1,17 @@
+<!doctype html>
+<html lang="zh-CN" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments :: head('发现好物')}"></head>
+<body><div class="app"><header th:replace="~{fragments :: header}"></header>
+<main class="content"><h1>发现好物</h1>
+<form class="panel filters" th:action="@{/}" method="get">
+<label>关键词<input name="keyword" th:value="${param.keyword}" placeholder="搜索二手好物"></label>
+<label>两级分类<input name="category" th:value="${param.category}" placeholder="数码电子/相机"></label>
+<label>最低价<input type="number" name="min" min="0" step="0.01" th:value="${param.min}"></label>
+<label>最高价<input type="number" name="max" min="0" step="0.01" th:value="${param.max}"></label>
+<label>商品状态<select name="status"><option value="">全部公开</option><option value="ON_SALE">在售</option><option value="SOLD_OUT">售罄可预约</option></select></label>
+<label>排序<select name="sort"><option value="newest">最新发布</option><option value="price">价格从低到高</option></select></label><button>搜索</button><a th:href="@{/}">重置</a></form>
+<p class="empty-state" th:if="${#lists.isEmpty(items)}">暂无匹配商品。卖家可创建草稿并提交管理员审核。</p>
+<div class="catalog"><a class="product" th:each="p : ${items}" th:href="@{/products/{id}(id=${p.id})}">
+<div class="art"><img th:src="${p.imageUrl}" th:alt="${p.name}"><span class="chip" th:text="${p.status.label}"></span></div>
+<div class="product-body"><h2 class="product-title" th:text="${p.name}"></h2><p class="product-desc" th:text="${p.category} + ' · ' + ${p.conditionLabel}"></p><div class="bottom-line"><span class="price" th:text="${p.minPrice}"></span><small th:text="'可售库存 ' + ${p.stock}"></small></div></div></a></div>
+</main></div></body></html>

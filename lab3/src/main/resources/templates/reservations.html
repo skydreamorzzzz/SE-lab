@@ -1,0 +1,9 @@
+<!doctype html>
+<html lang="zh-CN" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments :: head('预约队列')}"></head>
+<body><div class="app"><header th:replace="~{fragments :: header}"></header>
+<main class="content"><h1>预约队列</h1>
+<p>缺货预约重复申请合并；按先到先得分配补货，可部分满足。卖家确认已分配数量后生成待支付订单。</p><p th:if="${#lists.isEmpty(reservations)}">暂无预约</p><section class="panel" th:each="r : ${reservations}"><h2 th:text="'预约 #' + ${r.id} + ' / 商品 #' + ${r.productId}"></h2><p th:text="'剩余预约 ' + ${r.quantity} + ' · 已分配库存 ' + ${r.allocated}"></p><p th:text="${r.cancelled ? '已取消' : (r.confirmed ? '已全部转订单' : '等待分配或卖家确认')}"></p>
+<form th:if="${viewer.role == 'BUYER' and !r.cancelled and !r.confirmed}" th:action="@{/reservations/{id}/cancel(id=${r.id})}" method="post"><button>取消预约</button></form>
+<form th:if="${viewer.role == 'SELLER' and r.allocated > 0 and !r.cancelled and !r.confirmed}" th:action="@{/seller/reservations/{id}/confirm(id=${r.id})}" method="post"><button>确认已分配数量并创建订单</button></form></section>
+</main></div></body></html>

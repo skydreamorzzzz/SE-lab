@@ -1,0 +1,16 @@
+<!doctype html>
+<html lang="zh-CN" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments :: head('发布闲置')}"></head>
+<body><div class="app"><header th:replace="~{fragments :: header}"></header>
+<main class="content"><h1>发布闲置</h1>
+<form class="panel stack" th:action="@{/seller/save}" method="post"><input type="hidden" name="id" th:value="${product.id}">
+<label>宝贝名称<input name="name" maxlength="100" th:value="${product.name}"></label>
+<label>商品分类（一级/二级）<input name="category" placeholder="数码电子/相机" th:value="${product.category}"></label>
+<label>新旧程度<input name="conditionLabel" placeholder="9成新" th:value="${product.conditionLabel}"></label>
+<label>图片地址<input name="imageUrl" placeholder="https://.../photo.jpg 或 /images/sample.svg" th:value="${product.imageUrl}"></label><small>演示可填写 /images/sample.svg；支持 PNG/JPG/WEBP 的 HTTPS 图片地址。</small>
+<label>真实描述<textarea name="description" maxlength="2000" th:text="${product.description}"></textarea></label>
+<label>最低售价<input type="number" name="minPrice" step="0.01" min="0.01" th:value="${product.minPrice}"></label>
+<label>最高售价<input type="number" name="maxPrice" step="0.01" min="0.01" th:value="${product.maxPrice}"></label>
+<label>计划预约总量<input type="number" name="reservationLimit" min="0" th:value="${product.reservationLimit}"></label>
+<small>允许保存不完整草稿；提交审核前校验完整性。库存请在商品管理中单独调整。</small><button>保存草稿 / 修改内容</button></form>
+</main></div></body></html>

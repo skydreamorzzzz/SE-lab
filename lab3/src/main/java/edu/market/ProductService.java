@@ -39,7 +39,21 @@ public class ProductService {
                     && product.getStatus() != ProductStatus.PENDING_REVIEW, "当前状态不能编辑");
         }
         BusinessException.require(input.getReservationLimit() >= 0, "预约计划不能为负数");
+        BusinessException.require(input.getReservationLimit() <= 1000000, "预约计划不得超过 1000000");
         BusinessException.require(input.getName() == null || input.getName().length() <= 100, "名称过长");
+        BusinessException.require(input.getCategory() == null || input.getCategory().length() <= 100, "分类过长");
+        BusinessException.require(input.getConditionLabel() == null || input.getConditionLabel().length() <= 40,
+                "成色说明不得超过 40 字");
+        BusinessException.require(input.getImageUrl() == null || input.getImageUrl().length() <= 250,
+                "图片地址不得超过 250 字");
+        if (input.getMinPrice() != null) {
+            BusinessException.require(input.getMinPrice().signum() > 0 && input.getMinPrice().scale() <= 2,
+                    "最低价必须为正数，最多两位小数");
+        }
+        if (input.getMaxPrice() != null) {
+            BusinessException.require(input.getMaxPrice().signum() > 0 && input.getMaxPrice().scale() <= 2,
+                    "最高价必须为正数，最多两位小数");
+        }
         BusinessException.require(input.getDescription() == null || input.getDescription().length() <= 2000,
                 "描述不超过 2000 字");
         boolean changed = !Objects.equals(product.getName(), input.getName())
@@ -92,6 +106,10 @@ public class ProductService {
         product.setStatus(approve ? (product.getStock() > 0 ? ProductStatus.ON_SALE : ProductStatus.SOLD_OUT)
                 : ProductStatus.DRAFT);
         product.setReviewNote(note);
+        if (approve) {
+            allocateStock(product);
+            product.setStatus(product.getStock() == 0 ? ProductStatus.SOLD_OUT : ProductStatus.ON_SALE);
+        }
         activities.record(username, "PRODUCT", id, "AUDIT", product.getStatus().name());
     }
 
@@ -147,6 +165,20 @@ public class ProductService {
 
     public Product locked(Long id) {
         return products.lockById(id).orElseThrow(() -> new BusinessException("商品不存在"));
+    }
+
+    public void allocateStock(Product product) {
+        if (!isPublic(product)) {
+            return;
+        }
+        List<Reservation> queue = reservations.findByProductIdAndCancelledFalseAndConfirmedFalseOrderByIdAsc(product.getId());
+        for (Reservation item : queue) {
+            int available = product.getStock();
+            int remaining = item.getQuantity() - item.getAllocated();
+            int allocated = Math.min(available, remaining);
+            item.setAllocated(item.getAllocated() + allocated);
+            product.setStock(available - allocated);
+        }
     }
 
     public void owner(Account actor, Product product) {

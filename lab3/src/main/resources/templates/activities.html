@@ -1,0 +1,6 @@
+<!doctype html>
+<html lang="zh-CN" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments :: head('关键操作日志')}"></head>
+<body><div class="app"><header th:replace="~{fragments :: header}"></header>
+<main class="content"><h1>关键操作日志</h1>
+<form class="panel filters" th:action="@{/admin/activities}" method="get"><label>操作者<input name="actor"></label><label>对象类型<input name="objectType" placeholder="PRODUCT / ORDER / RESERVATION"></label><label>对象编号<input type="number" name="objectId"></label><button>查询日志</button></form><section class="panel" th:each="a : ${result.content}"><b th:text="${a.operation} + ' · ' + ${a.outcome}"></b><p th:text="${a.actor} + ' / ' + ${a.objectType} + ' #' + ${a.objectId}"></p><small th:text="${a.occurredAt}"></small></section><a th:if="${result.hasNext()}" th:href="@{/admin/activities(page=${result.number + 1},actor=${param.actor},objectType=${param.objectType},objectId=${param.objectId})}">下一页</a></main></div></body></html>

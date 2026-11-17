@@ -1,0 +1,7 @@
+<!doctype html>
+<html lang="zh-CN" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments :: head('操作未完成')}"></head>
+<body><div class="app"><header th:replace="~{fragments :: header}"></header>
+<main class="content"><h1>操作未完成</h1>
+<section class="panel"><p class="notice" th:text="${message}"></p><a class="button" th:href="@{/}">返回首页</a><a class="button" th:href="@{/orders}">查看订单</a><p>请返回对应页面检查输入后重试。</p></section>
+</main></div></body></html>

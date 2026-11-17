@@ -1,0 +1,13 @@
+{
+  "passed": true,
+  "checks": [
+    "register/login/profile/seller draft/stock/submit/admin approve",
+    "search/buy/simulate pay/ship/receive/both reviews",
+    "reserve/cancel/reserve again/restock/FIFO/seller confirmation/order",
+    "buyer denied admin and POST without CSRF denied",
+    "logout",
+    "process restart preserves accounts/order/reviews/seller reputation"
+  ],
+  "productUrl": "http://127.0.0.1:18080/products/1",
+  "orderUrl": "http://127.0.0.1:18080/orders/1"
+}

@@ -1,0 +1,10 @@
+<!doctype html>
+<html lang="zh-CN" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments :: head('我的商品')}"></head>
+<body><div class="app"><header th:replace="~{fragments :: header}"></header>
+<main class="content"><h1>我的商品</h1>
+<a class="button" th:href="@{/seller/edit}">＋ 发布闲置</a><section class="panel" th:each="p : ${items}"><h2><a th:href="@{/products/{id}(id=${p.id})}" th:text="${p.name ?: '未命名草稿'}"></a></h2><p th:text="${p.status.label} + ' · 库存 ' + ${p.stock}"></p><p th:text="${p.reviewNote}"></p><div class="inline"><a class="button" th:href="@{/seller/edit(id=${p.id})}" th:if="${p.status.name() != 'PENDING_REVIEW' and p.status.name() != 'VIOLATION'}">编辑</a>
+<form th:if="${p.status.name() == 'DRAFT' or p.status.name() == 'OFF_SHELF'}" th:action="@{/seller/products/{id}/submit(id=${p.id})}" method="post"><button>提交审核</button></form>
+<form th:if="${p.status.name() == 'ON_SALE' or p.status.name() == 'SOLD_OUT'}" th:action="@{/seller/products/{id}/withdraw(id=${p.id})}" method="post"><button>下架</button></form></div>
+<form class="inline" th:action="@{/seller/products/{id}/stock(id=${p.id})}" method="post"><label>库存增减<input type="number" name="delta" value="1" required></label><button>调整库存</button></form></section>
+</main></div></body></html>

@@ -1,0 +1,6 @@
+<!doctype html>
+<html lang="zh-CN" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments :: head('卖家主页')}"></head>
+<body><div class="app"><header th:replace="~{fragments :: header}"></header>
+<main class="content"><h1>卖家主页</h1>
+<section class="panel"><h2 th:text="${seller.displayName}"></h2><p th:text="${seller.formattedRating()} + ' · 好评率 ' + ${seller.positiveRate()}"></p><small th:text="'收到评价 ' + ${seller.reviewCount} + ' 条'"></small></section><section class="panel"><h2>公开商品</h2><p th:each="p : ${seller.listings}"><a th:href="@{/products/{id}(id=${p.id})}" th:text="${p.name} + ' · ¥' + ${p.minPrice}"></a></p></section><section class="panel"><h2>最近评价</h2><article th:each="r : ${seller.recentReviews}"><b th:text="${r.rating} + '/5'"></b><p th:text="${r.content}"></p></article></section></main></div></body></html>

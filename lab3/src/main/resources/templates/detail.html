@@ -1,0 +1,12 @@
+<!doctype html>
+<html lang="zh-CN" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments :: head('商品详情')}"></head>
+<body><div class="app"><header th:replace="~{fragments :: header}"></header>
+<main class="content"><h1>商品详情</h1>
+<section class="panel"><img class="detail-image" th:src="${product.imageUrl}" th:alt="${product.name}"><a class="button" th:href="@{/sellers/{id}(id=${product.sellerId})}">卖家主页与评价</a><h2 th:text="${product.name}"></h2><span class="price" th:text="${product.minPrice} + ' – ' + ${product.maxPrice}"></span><p th:text="${product.category} + ' · ' + ${product.conditionLabel}"></p><p th:text="${product.status.label} + ' / 库存 ' + ${product.stock}"></p><pre class="description" th:text="${product.description}"></pre><small>区间价格在 MVP 中按卖家公开最低价成交，不提供议价。</small>
+<div th:if="${viewer != null and viewer.role == 'BUYER'}">
+<form class="inline" th:if="${product.status.name() == 'ON_SALE'}" th:action="@{/buy/{id}(id=${product.id})}" method="post"><input type="hidden" name="requestKey" th:value="${requestKey}"><input type="hidden" name="displayedPrice" th:value="${product.minPrice}"><label>数量<input type="number" name="quantity" value="1" min="1" th:max="${product.stock}" required></label><button>立即购买</button></form>
+<form class="inline" th:if="${product.status.name() == 'SOLD_OUT'}" th:action="@{/reserve/{id}(id=${product.id})}" method="post"><label>预约数量<input type="number" name="quantity" value="1" min="1" required></label><button>申请缺货预约</button><small th:text="'计划预约上限 ' + ${product.reservationLimit}"></small></form></div>
+<a th:if="${viewer == null}" th:href="@{/login}">登录后购买或预约</a></section>
+<section class="panel"><h2>交易评价</h2><p th:if="${#lists.isEmpty(reviews)}">暂无评价</p><article th:each="r : ${reviews}"><b th:text="${r.rating} + ' / 5'"></b><p th:text="${r.content}"></p><small th:text="'用户 #' + ${r.authorId}"></small></article></section>
+</main></div></body></html>
