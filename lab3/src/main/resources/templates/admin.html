@@ -1,11 +1,57 @@
-<!doctype html>
+<!DOCTYPE html>
+
 <html lang="zh-CN" xmlns:th="http://www.thymeleaf.org">
-<head th:replace="~{fragments :: head('商品审核')}"></head>
-<body><div class="app"><header th:replace="~{fragments :: header}"></header>
-<main class="content"><h1>商品审核</h1>
-<a class="button" th:href="@{/admin/activities}">关键操作日志</a><p>审核只处理商品信息，不提供买卖双方的地址或订单明细。</p><p th:if="${#lists.isEmpty(items)}">暂无待审核商品</p>
-<section class="panel" th:each="p : ${items}"><h2><a th:href="@{/products/{id}(id=${p.id})}" th:text="${p.name}"></a></h2><p th:text="${p.description}"></p><p th:text="${p.minPrice} + ' – ' + ${p.maxPrice}"></p><form class="inline" th:action="@{/admin/{id}/audit(id=${p.id})}" method="post"><label>审核意见<input name="note" maxlength="200" placeholder="驳回时必填"></label><button name="approve" value="true">通过</button><button name="approve" value="false">驳回至草稿</button></form></section>
-<a class="button" th:if="${viewer.superAdmin}" th:href="@{/admin/platform}">平台规则与管理员</a>
-<a class="button" th:href="@{/moderation}">举报、申诉与违规处置</a>
-<a class="button" th:href="@{/admin/statistics}">交易聚合统计</a>
-</main></div></body></html>
+<head><link href="/css/lab2-admin.css" rel="stylesheet"/>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1, viewport-fit=cover" name="viewport"/>
+<title>拾物集 · 管理后台</title>
+
+<meta name="csrf" th:content="${_csrf.token}"/><meta name="csrf-header" th:content="${_csrf.headerName}"/><meta name="authenticated" th:content="${viewer != null}"/><link href="/css/lab2-integration.css" rel="stylesheet"/><script defer="" src="/js/market.js"></script></head>
+<body>
+<svg aria-hidden="true" style="position:absolute;width:0;height:0;overflow:hidden" xmlns="http://www.w3.org/2000/svg">
+<symbol id="i-shop" viewbox="0 0 24 24"><path d="M3 11h18l-2-6H5l-2 6Z"></path><path d="M5 11v10h14V11M9 21v-7h6v7"></path><path d="M3 11q2.5 4 5 0 2.5 4 5 0 2.5 4 5 0 1.5 1.4 3 0"></path></symbol>
+<symbol id="i-grid" viewbox="0 0 24 24"><rect height="7" rx="1" width="7" x="3" y="3"></rect><rect height="7" rx="1" width="7" x="14" y="3"></rect><rect height="7" rx="1" width="7" x="3" y="14"></rect><rect height="7" rx="1" width="7" x="14" y="14"></rect></symbol>
+<symbol id="i-box" viewbox="0 0 24 24"><path d="m3 7 9-4 9 4v11l-9 4-9-4V7Z"></path><path d="m3 7 9 4 9-4M12 11v11"></path></symbol>
+<symbol id="i-flag" viewbox="0 0 24 24"><path d="M5 22V3M5 4q5-3 9 0t7 0v11q-4 3-8 0t-8 0"></path></symbol>
+<symbol id="i-message" viewbox="0 0 24 24"><path d="M4 4h16v13H9l-5 4V4Z"></path><path d="M8 9h8M8 13h5"></path></symbol>
+<symbol id="i-chart" viewbox="0 0 24 24"><path d="M4 20h17M6 17v-5M12 17V5M18 17V9"></path></symbol>
+<symbol id="i-users" viewbox="0 0 24 24"><circle cx="9" cy="8" r="3.2"></circle><path d="M2.5 20v-2c0-3 2.8-5.2 6.5-5.2s6.5 2.2 6.5 5.2v2M17 5a3 3 0 0 1 0 6M17 14c2.6 0 4.5 1.8 4.5 4v2"></path></symbol>
+<symbol id="i-clock" viewbox="0 0 24 24"><circle cx="12" cy="12" r="9"></circle><path d="M12 7v5l4 2"></path></symbol>
+<symbol id="i-check" viewbox="0 0 24 24"><path d="m4 12 5 5L20 6"></path></symbol>
+<symbol id="i-close" viewbox="0 0 24 24"><path d="M5 5l14 14M19 5 5 19"></path></symbol>
+<symbol id="i-search" viewbox="0 0 24 24"><circle cx="10.8" cy="10.8" r="7"></circle><path d="m16 16 5 5"></path></symbol>
+<symbol id="i-eye" viewbox="0 0 24 24"><path d="M2 12s3.5-6 10-6 10 6 10 6-3.5 6-10 6S2 12 2 12Z"></path><circle cx="12" cy="12" r="2.5"></circle></symbol>
+<symbol id="i-info" viewbox="0 0 24 24"><circle cx="12" cy="12" r="9"></circle><path d="M12 11v6M12 7h.01"></path></symbol>
+<symbol id="i-shield" viewbox="0 0 24 24"><path d="m12 2 8 3v6c0 5-3.6 9-8 11-4.4-2-8-6-8-11V5Z"></path><path d="m9 12 2 2 4-4"></path></symbol>
+<symbol id="i-arrow" viewbox="0 0 24 24"><path d="M7 12h12m-5-5 5 5-5 5"></path></symbol>
+<symbol id="i-headphones" viewbox="0 0 64 64"><path d="M13 34V29a19 19 0 0 1 38 0v5"></path><rect height="22" rx="5" width="12" x="10" y="30"></rect><rect height="22" rx="5" width="12" x="42" y="30"></rect><path d="M22 42v8q0 7 9 7h5"></path></symbol>
+<symbol id="i-camera" viewbox="0 0 64 64"><rect height="34" rx="6" width="48" x="8" y="18"></rect><path d="M17 18l5-7h16l5 7"></path><circle cx="32" cy="34" r="11"></circle><circle cx="49" cy="25" r="1.5"></circle></symbol>
+<symbol id="i-keyboard" viewbox="0 0 64 64"><rect height="29" rx="4" width="50" x="7" y="19"></rect><path d="M14 27h3m6 0h3m6 0h3m6 0h3M14 34h3m6 0h3m6 0h3m6 0h3m-27 7h30"></path></symbol>
+<symbol id="i-watch" viewbox="0 0 64 64"><path d="m25 16 2-10h10l2 10m-14 32 2 10h10l2-10"></path><rect height="32" rx="10" width="28" x="18" y="16"></rect><circle cx="32" cy="32" r="9"></circle><path d="M32 26v7l5 2"></path></symbol>
+<symbol id="i-lamp" viewbox="0 0 64 64"><path d="M19 22h26l8 18H11l8-18ZM32 40v13M19 55h26M25 17l-4-8h22l-4 8"></path></symbol>
+</svg>
+<div class="app">
+<header class="topbar">
+<div class="brandbox"><a class="brand" href="/"><span class="brand-mark"><svg><use href="#i-shop"></use></svg></span><span class="brand-name">拾物集</span></a><span class="admin-tag">管理控制台</span></div>
+<div class="top-actions"><a class="store-link" href="/">返回商城 <svg><use href="#i-arrow"></use></svg></a><span class="top-divider"></span><div class="admin-ident"><span class="avatar">管</span><div><b th:text="${viewer.displayName}">平台管理员</b><small>商品与社区治理</small></div></div></div>
+</header>
+<div class="page">
+<aside aria-label="后台功能导航" class="sidebar">
+<div class="nav-heading">PLATFORM MANAGEMENT</div>
+<button class="nav-item active" data-nav="audit"><svg><use href="#i-box"></use></svg>商品审核 <span class="side-count" id="pending-count">0</span></button>
+<button class="nav-item" data-nav="violation"><svg><use href="#i-flag"></use></svg>违规处理</button>
+<button class="nav-item" data-nav="reports"><svg><use href="#i-message"></use></svg>举报与申诉</button>
+<button class="nav-item" data-nav="stats"><svg><use href="#i-chart"></use></svg>交易统计</button>
+<div class="nav-sep"></div>
+<button class="nav-item" data-nav="users"><svg><use href="#i-users"></use></svg>用户管理</button>
+<div class="nav-sep"></div><a class="nav-item" href="/admin/activities">操作记录</a><a class="nav-item" href="/admin/platform" th:if="${viewer.superAdmin}">平台规则与备份</a><a class="nav-item" href="/profile">个人中心</a><div class="sidebar-foot"><svg><use href="#i-info"></use></svg> 操作说明<br/>商品内容由卖家维护；管理员仅负责审核、下架与违规处置。</div>
+</aside>
+<main aria-live="polite" class="content" id="main"></main>
+</div>
+</div>
+<div aria-hidden="true" class="backdrop" id="backdrop"></div>
+<aside aria-hidden="true" aria-labelledby="drawerTitle" aria-modal="true" class="drawer" id="drawer" role="dialog"><div class="drawer-top"><div><strong id="drawerTitle">审核商品</strong><small id="drawerSubtitle">查看信息与处理申请</small></div><button aria-label="关闭详情面板" class="iconbtn" id="drawerClose"><svg><use href="#i-close"></use></svg></button></div><div class="drawer-scroll" id="drawerContent"></div><div class="drawer-footer" id="drawerActions"></div></aside>
+<div aria-live="polite" class="toast" id="toast" role="status"></div>
+
+<script defer="" src="/js/lab2-admin.js"></script></body>
+</html>

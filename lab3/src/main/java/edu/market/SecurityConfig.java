@@ -32,7 +32,7 @@ public class SecurityConfig {
         http.authorizeHttpRequests(auth -> auth
                 .requestMatchers("/", "/search", "/api/catalog", "/products/*", "/sellers/*", "/login", "/register", "/recover", "/ranking", "/availability/*", "/js/**", "/css/**", "/images/**", "/error")
                 .permitAll().requestMatchers(org.springframework.http.HttpMethod.GET, "/media/*", "/api/products/*/comments").permitAll()
-                .requestMatchers("/admin/**").hasRole("ADMIN")
+                .requestMatchers("/api/admin/**", "/admin/**").hasRole("ADMIN")
                 .requestMatchers("/seller/**").hasRole("SELLER").anyRequest().authenticated())
                 .formLogin(form -> form.loginPage("/login").defaultSuccessUrl("/", true).permitAll())
                 .logout(logout -> logout.logoutSuccessUrl("/"));

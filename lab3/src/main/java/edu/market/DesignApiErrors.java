@@ -9,7 +9,7 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
 @Order(Ordered.HIGHEST_PRECEDENCE)
-@RestControllerAdvice(assignableTypes = {DesignCatalogController.class, DesignProductController.class})
+@RestControllerAdvice(assignableTypes = {DesignCatalogController.class, DesignProductController.class, DesignWorkspaceController.class})
 public class DesignApiErrors {
     @ExceptionHandler(BusinessException.class)
     ResponseEntity<Map<String, String>> business(BusinessException exception) {

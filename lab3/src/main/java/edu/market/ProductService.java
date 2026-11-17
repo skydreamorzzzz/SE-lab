@@ -18,8 +18,9 @@ public class ProductService {
     private final AccountRepository accountStore;
     private final PersonalRepository personal;
     private final MediaRepository media;
+    private final AuditSnapshotRepository snapshots;
 
-    public ProductService(ProductRepository products, AccountService accounts, ReservationRepository reservations, ActivityService activities, AccountRepository accountStore, PersonalRepository personal, MediaRepository media) {
+    public ProductService(ProductRepository products, AccountService accounts, ReservationRepository reservations, ActivityService activities, AccountRepository accountStore, PersonalRepository personal, MediaRepository media, AuditSnapshotRepository snapshots) {
         this.products = products;
         this.accounts = accounts;
         this.activities = activities;
@@ -27,6 +28,7 @@ public class ProductService {
         this.accountStore = accountStore;
         this.personal = personal;
         this.media = media;
+        this.snapshots = snapshots;
     }
 
     public Product save(String username, Long id, Product input) {
@@ -163,6 +165,20 @@ public class ProductService {
         product.setStatus(approve ? (product.getStock() > 0 ? ProductStatus.ON_SALE : ProductStatus.SOLD_OUT)
                 : ProductStatus.DRAFT);
         product.setReviewNote(note);
+        AuditSnapshot snapshot = new AuditSnapshot();
+        snapshot.setProductId(id);
+        snapshot.setSellerId(product.getSellerId());
+        snapshot.setName(product.getName());
+        snapshot.setCategory(product.getCategory());
+        snapshot.setDescription(product.getDescription());
+        snapshot.setConditionLabel(product.getConditionLabel());
+        snapshot.setImageUrl(product.getImageUrl());
+        snapshot.setPrice(product.getMinPrice());
+        snapshot.setQuantity(product.getStock());
+        snapshot.setStatus(approve ? "approved" : "rejected");
+        snapshot.setNote(note);
+        snapshot.setReviewedAt(java.time.Instant.now());
+        snapshots.save(snapshot);
         if (approve) {
             product.setPublishedAt(java.time.Instant.now());
             allocateStock(product);

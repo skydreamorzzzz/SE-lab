@@ -1,0 +1,4 @@
+<!doctype html>
+<html lang="zh-CN" xmlns:th="http://www.thymeleaf.org"><head th:replace="~{fragments :: head('消息与进度')}"></head><body><div class="app"><header th:replace="~{fragments :: header}"></header><main class="content"><h1>消息与进度</h1>
+<p>按当前账户的订单、议价、举报申诉反馈与留言回复汇总业务进度。</p><p th:if="${#lists.isEmpty(rows)}">暂无消息</p><section class="panel" th:each="r : ${rows}"><h2 th:text="${r.title}"></h2><p th:text="${r.description}"></p><a th:href="${r.url}" th:text="${r.action}"></a></section>
+</main></div></body></html>

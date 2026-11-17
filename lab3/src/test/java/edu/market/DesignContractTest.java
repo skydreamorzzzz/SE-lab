@@ -109,4 +109,52 @@ class DesignContractTest {
         assertFalse(json.contains("address"));
         assertFalse(json.contains("recoveryHash"));
     }
+
+    @Autowired
+    private DesignAccountService profiles;
+    @Autowired
+    private DesignAdminService workspace;
+    @Autowired
+    private PersonalService personal;
+    @Autowired
+    private AuditSnapshotRepository snapshots;
+
+    @Test
+    void profileDataBelongsToActorAndAdministrativeHistoryIsAnImmutableSnapshot() {
+        Product product = products.save("seller", null, input());
+        products.submit("seller", product.getId());
+        products.audit("admin", product.getId(), false, "请补充清晰的实物照片");
+        Product draft = input();
+        draft.setName("未再次提交的私人草稿内容");
+        products.save("seller", product.getId(), draft);
+        var data = workspace.dashboard("admin").toString();
+        assertTrue(data.contains("二手相机"));
+        assertFalse(data.contains("未再次提交的私人草稿内容"));
+        assertEquals("二手相机", snapshots.findAllByOrderByIdDesc().getFirst().getName());
+        assertThrows(BusinessException.class, () -> workspace.dashboard("buyer"));
+        assertThrows(BusinessException.class, () -> workspace.statistics("buyer", 7));
+        Product publicProduct = publish(2);
+        personal.toggle("buyer", "FAVORITE", publicProduct.getId(), true);
+        assertEquals(1, ((java.util.Map<?, ?>) profiles.profile("buyer").get("counts")).get("FAVORITE"));
+        assertEquals(0, ((java.util.Map<?, ?>) profiles.profile("buyer2").get("counts")).get("FAVORITE"));
+        profiles.update("buyer", "原型昵称", "仅我与交易方可见的地址", "南京", "诚信交易");
+        assertEquals("南京", profiles.profile("buyer").get("city"));
+        String adminData = workspace.dashboard("admin").toString();
+        assertFalse(adminData.contains("仅我与交易方可见的地址"));
+        assertFalse(adminData.contains("passwordHash"));
+    }
+
+    @Test
+    void dashboardStatisticsPreserveLowSamplePrivacy() {
+        Product product = publish(2);
+        PurchaseOrder order = buy(product, 1);
+        trading.action("buyer", order.getId(), "pay");
+        trading.action("seller", order.getId(), "ship");
+        trading.action("buyer", order.getId(), "receive");
+        var result = workspace.statistics("admin", 7);
+        StatisticsService.Summary totals = (StatisticsService.Summary) result.get("summary");
+        assertTrue(totals.suppressed());
+        assertEquals(null, totals.gross());
+        assertTrue(result.get("series").toString().contains("1–4"));
+    }
 }
