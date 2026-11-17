@@ -9,4 +9,5 @@
 <form class="inline" th:if="${product.status.name() == 'SOLD_OUT'}" th:action="@{/reserve/{id}(id=${product.id})}" method="post"><label>预约数量<input type="number" name="quantity" value="1" min="1" required></label><button>申请缺货预约</button><small th:text="'计划预约上限 ' + ${product.reservationLimit}"></small></form></div>
 <a th:if="${viewer == null}" th:href="@{/login}">登录后购买或预约</a></section>
 <section class="panel"><h2>交易评价</h2><p th:if="${#lists.isEmpty(reviews)}">暂无评价</p><article th:each="r : ${reviews}"><b th:text="${r.rating} + ' / 5'"></b><p th:text="${r.content}"></p><small th:text="'用户 #' + ${r.authorId}"></small></article></section>
+<a class="button" th:if="${viewer != null}" th:href="@{/moderation}">举报此商品（对象编号见网址）</a>
 </main></div></body></html>

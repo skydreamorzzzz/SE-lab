@@ -11,6 +11,8 @@ import jakarta.persistence.Table;
 public class Account {
     @Column(nullable = false, columnDefinition = "boolean default false")
     private boolean superAdmin;
+    @Column(nullable = false, columnDefinition = "boolean default false")
+    private boolean banned;
     @Id
     @GeneratedValue
     private Long id;
@@ -72,5 +74,13 @@ public class Account {
 
     public void setSuperAdmin(boolean value) {
         superAdmin = value;
+    }
+
+    public boolean getBanned() {
+        return banned;
+    }
+
+    public void setBanned(boolean value) {
+        banned = value;
     }
 }

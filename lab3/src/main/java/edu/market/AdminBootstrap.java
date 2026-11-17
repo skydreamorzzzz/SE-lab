@@ -33,7 +33,7 @@ public class AdminBootstrap implements ApplicationRunner {
         String username = environment.getProperty("MARKET_ADMIN_USER");
         String password = environment.getProperty("MARKET_ADMIN_PASSWORD");
         if (username != null && password != null && accounts.findByUsername(username).isEmpty()) {
-            BusinessException.require(username.matches("[a-zA-Z0-9_]{3,40}"), "绠＄悊鍛樼敤鎴峰悕鏍煎紡鏃犳晥");
+            BusinessException.require(username.matches("[a-zA-Z0-9_]{3,40}"), "管理员用户名格式无效");
             AccountService.validatePassword(password);
             accounts.save(new Account(username, encoder.encode(password), "ADMIN"));
         }

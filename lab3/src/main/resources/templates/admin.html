@@ -6,4 +6,5 @@
 <a class="button" th:href="@{/admin/activities}">关键操作日志</a><p>审核只处理商品信息，不提供买卖双方的地址或订单明细。</p><p th:if="${#lists.isEmpty(items)}">暂无待审核商品</p>
 <section class="panel" th:each="p : ${items}"><h2><a th:href="@{/products/{id}(id=${p.id})}" th:text="${p.name}"></a></h2><p th:text="${p.description}"></p><p th:text="${p.minPrice} + ' – ' + ${p.maxPrice}"></p><form class="inline" th:action="@{/admin/{id}/audit(id=${p.id})}" method="post"><label>审核意见<input name="note" maxlength="200" placeholder="驳回时必填"></label><button name="approve" value="true">通过</button><button name="approve" value="false">驳回至草稿</button></form></section>
 <a class="button" th:if="${viewer.superAdmin}" th:href="@{/admin/platform}">平台规则与管理员</a>
+<a class="button" th:href="@{/moderation}">举报、申诉与违规处置</a>
 </main></div></body></html>

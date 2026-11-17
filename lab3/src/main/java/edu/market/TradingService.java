@@ -43,6 +43,7 @@ public class TradingService {
             return previous.get();
         }
         BusinessException.require(!buyer.getId().equals(product.getSellerId()), "不能购买自己的商品");
+        BusinessException.require(!products.sellerBanned(product), "卖家已封禁");
         BusinessException.require(product.getStatus() == ProductStatus.ON_SALE, "商品不可购买，请刷新");
         BusinessException.require(quantity > 0 && quantity <= product.getStock(), "库存不足或数量无效");
         BusinessException.require(displayedPrice != null && displayedPrice.compareTo(product.getMinPrice()) == 0,
@@ -68,6 +69,7 @@ public class TradingService {
     public Reservation reserve(String username, Long productId, int quantity) {
         Account buyer = buyer(username);
         Product product = products.locked(productId);
+        BusinessException.require(!products.sellerBanned(product), "卖家已封禁");
         BusinessException.require(product.getStatus() == ProductStatus.SOLD_OUT && product.getStock() == 0,
                 "仅售罄商品可预约");
         BusinessException.require(quantity > 0 && quantity <= 1000000, "预约数量无效");

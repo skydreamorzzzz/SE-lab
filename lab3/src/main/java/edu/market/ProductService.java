@@ -15,12 +15,14 @@ public class ProductService {
     private final ActivityService activities;
     private final AccountService accounts;
     private final ReservationRepository reservations;
+    private final AccountRepository accountStore;
 
-    public ProductService(ProductRepository products, AccountService accounts, ReservationRepository reservations, ActivityService activities) {
+    public ProductService(ProductRepository products, AccountService accounts, ReservationRepository reservations, ActivityService activities, AccountRepository accountStore) {
         this.products = products;
         this.accounts = accounts;
         this.activities = activities;
         this.reservations = reservations;
+        this.accountStore = accountStore;
     }
 
     public Product save(String username, Long id, Product input) {
@@ -124,7 +126,7 @@ public class ProductService {
 
     public Product detail(Long id, String username) {
         Product product = products.findById(id).orElseThrow(() -> new BusinessException("商品不存在"));
-        if (!isPublic(product)) {
+        if (!isPublic(product) || sellerBanned(product)) {
             Account actor = accounts.current(username);
             BusinessException.require(actor.getId().equals(product.getSellerId())
                     || actor.getRole().equals("ADMIN"), "无权查看未公开商品");
@@ -139,8 +141,12 @@ public class ProductService {
         BusinessException.require(min == null || max == null || min.compareTo(max) <= 0, "价格区间倒置");
         BusinessException.require(status == null || status == ProductStatus.ON_SALE
                 || status == ProductStatus.SOLD_OUT, "只能检索公开状态");
-        Specification<Product> spec = (root, query, cb) -> cb.and(
-                root.get("status").in(ProductStatus.ON_SALE, ProductStatus.SOLD_OUT));
+        Specification<Product> spec = (root, query, cb) -> {
+            var sellers = query.subquery(Long.class);
+            var seller = sellers.from(Account.class);
+            sellers.select(seller.get("id")).where(cb.isFalse(seller.get("banned")));
+            return cb.and(root.get("status").in(ProductStatus.ON_SALE, ProductStatus.SOLD_OUT), root.get("sellerId").in(sellers));
+        };
         if (keyword != null && !keyword.isBlank()) {
             spec = spec.and((r, q, c) -> c.like(c.lower(r.get("name")),
                     "%" + keyword.toLowerCase().replace("%", "\\%").replace("_", "\\_") + "%", '\\'));
@@ -168,7 +174,7 @@ public class ProductService {
     }
 
     public void allocateStock(Product product) {
-        if (!isPublic(product)) {
+        if (!isPublic(product) || sellerBanned(product)) {
             return;
         }
         List<Reservation> queue = reservations.findByProductIdAndCancelledFalseAndConfirmedFalseOrderByIdAsc(product.getId());
@@ -184,6 +190,10 @@ public class ProductService {
     public void owner(Account actor, Product product) {
         accounts.requireRole(actor, "SELLER");
         BusinessException.require(actor.getId().equals(product.getSellerId()), "只能管理自己的商品");
+    }
+
+    public boolean sellerBanned(Product product) {
+        return accountStore.findById(product.getSellerId()).map(Account::getBanned).orElse(true);
     }
 
     public boolean isPublic(Product product) {
