@@ -23,6 +23,17 @@ public class Product {
     @Column(nullable = false, columnDefinition = "integer default 0")
     private int conditionLevel;
     private java.time.Instant publishedAt;
+    @Column(length = 2000)
+    private String extraImages;
+    private String videoUrl;
+    private String brand;
+    private String modelName;
+    private String usageYears;
+    private String originPlace;
+    private String contactChannel;
+    private String shippingAddress;
+    @Column(nullable = false, columnDefinition = "boolean default false")
+    private boolean returnSupported;
     @Id
     @GeneratedValue
     private Long id;
@@ -195,5 +206,77 @@ public class Product {
 
     public void setPublishedAt(java.time.Instant value) {
         publishedAt = value;
+    }
+
+    public String getExtraImages() {
+        return extraImages;
+    }
+
+    public void setExtraImages(String value) {
+        extraImages = value;
+    }
+
+    public String getVideoUrl() {
+        return videoUrl;
+    }
+
+    public void setVideoUrl(String value) {
+        videoUrl = value;
+    }
+
+    public String getBrand() {
+        return brand;
+    }
+
+    public void setBrand(String value) {
+        brand = value;
+    }
+
+    public String getModelName() {
+        return modelName;
+    }
+
+    public void setModelName(String value) {
+        modelName = value;
+    }
+
+    public String getUsageYears() {
+        return usageYears;
+    }
+
+    public void setUsageYears(String value) {
+        usageYears = value;
+    }
+
+    public String getOriginPlace() {
+        return originPlace;
+    }
+
+    public void setOriginPlace(String value) {
+        originPlace = value;
+    }
+
+    public String getContactChannel() {
+        return contactChannel;
+    }
+
+    public void setContactChannel(String value) {
+        contactChannel = value;
+    }
+
+    public String getShippingAddress() {
+        return shippingAddress;
+    }
+
+    public void setShippingAddress(String value) {
+        shippingAddress = value;
+    }
+
+    public boolean getReturnSupported() {
+        return returnSupported;
+    }
+
+    public void setReturnSupported(boolean value) {
+        returnSupported = value;
     }
 }

@@ -1,0 +1,4 @@
+<!doctype html>
+<html lang="zh-CN" xmlns:th="http://www.thymeleaf.org"><head th:replace="~{fragments :: head('找回密码')}"></head><body><div class="app"><header th:replace="~{fragments :: header}"></header><main class="content"><h1>找回密码</h1>
+<form class="panel stack" th:action="@{/recover}" method="post"><label>用户名<input name="username" required></label><label>预先保存的一次性恢复凭证<input name="code" required autocomplete="off"></label><label>新密码<input type="password" name="password" minlength="8" maxlength="72" required></label><button>验证并重设密码</button></form>
+</main></div></body></html>

@@ -9,6 +9,8 @@ import org.springframework.data.jpa.repository.Lock;
 import org.springframework.data.jpa.repository.Query;
 
 public interface ProductRepository extends JpaRepository<Product, Long>, JpaSpecificationExecutor<Product> {
+    @org.springframework.data.jpa.repository.Query("select p from Product p where p.imageUrl = :url or p.videoUrl = :url or p.extraImages like concat('%', :url, '%')")
+    List<Product> usingMedia(String url);
     List<Product> findBySellerIdOrderByIdDesc(Long sellerId);
     List<Product> findByStatusOrderByIdAsc(ProductStatus status);
 

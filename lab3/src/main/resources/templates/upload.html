@@ -1,0 +1,4 @@
+<!doctype html>
+<html lang="zh-CN" xmlns:th="http://www.thymeleaf.org"><head th:replace="~{fragments :: head('上传商品或举报媒体')}"></head><body><div class="app"><header th:replace="~{fragments :: header}"></header><main class="content"><h1>上传商品或举报媒体</h1>
+<form class="panel stack" th:action="@{/media/upload}" method="post" enctype="multipart/form-data"><label>PNG/JPEG/WebP图片（10MB以内）或MP4/WebM视频（30MB以内）<input type="file" name="file" accept="image/png,image/jpeg,image/webp,video/mp4,video/webm" required></label><button>上传</button></form><section class="panel" th:if="${url != null}"><p>复制此地址到商品图片、附图、视频或举报图片字段：</p><pre th:text="${url}"></pre></section>
+</main></div></body></html>

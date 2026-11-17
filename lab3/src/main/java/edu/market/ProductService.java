@@ -17,14 +17,16 @@ public class ProductService {
     private final ReservationRepository reservations;
     private final AccountRepository accountStore;
     private final PersonalRepository personal;
+    private final MediaRepository media;
 
-    public ProductService(ProductRepository products, AccountService accounts, ReservationRepository reservations, ActivityService activities, AccountRepository accountStore, PersonalRepository personal) {
+    public ProductService(ProductRepository products, AccountService accounts, ReservationRepository reservations, ActivityService activities, AccountRepository accountStore, PersonalRepository personal, MediaRepository media) {
         this.products = products;
         this.accounts = accounts;
         this.activities = activities;
         this.reservations = reservations;
         this.accountStore = accountStore;
         this.personal = personal;
+        this.media = media;
     }
 
     public Product save(String username, Long id, Product input) {
@@ -60,13 +62,34 @@ public class ProductService {
         }
         BusinessException.require(input.getDescription() == null || input.getDescription().length() <= 2000,
                 "描述不超过 2000 字");
-        boolean changed = product.getNegotiable() != input.getNegotiable() || !Objects.equals(product.getName(), input.getName())
+        validateOptional(input);
+        String mediaText = (input.getImageUrl() == null ? "" : input.getImageUrl()) + " "
+                + (input.getExtraImages() == null ? "" : input.getExtraImages()) + " "
+                + (input.getVideoUrl() == null ? "" : input.getVideoUrl());
+        for (String url : mediaText.split("\\s+")) {
+            if (url.startsWith("/media/")) {
+                MediaAsset asset = media.findByStoredName(url.substring(7)).orElseThrow(() -> new BusinessException("媒体不存在"));
+                BusinessException.require(asset.getOwnerId().equals(seller.getId()), "只能引用自己上传的媒体");
+            }
+        }
+        boolean mediaChanged = !Objects.equals(product.getExtraImages(), input.getExtraImages())
+                || !Objects.equals(product.getVideoUrl(), input.getVideoUrl());
+        boolean changed = mediaChanged || product.getNegotiable() != input.getNegotiable() || !Objects.equals(product.getName(), input.getName())
                 || !Objects.equals(product.getDescription(), input.getDescription())
                 || !Objects.equals(product.getMinPrice(), input.getMinPrice())
                 || !Objects.equals(product.getMaxPrice(), input.getMaxPrice())
                 || !Objects.equals(product.getImageUrl(), input.getImageUrl())
                 || !Objects.equals(product.getCategory(), input.getCategory())
                 || !Objects.equals(product.getConditionLabel(), input.getConditionLabel());
+        product.setExtraImages(input.getExtraImages());
+        product.setVideoUrl(input.getVideoUrl());
+        product.setBrand(input.getBrand());
+        product.setModelName(input.getModelName());
+        product.setUsageYears(input.getUsageYears());
+        product.setOriginPlace(input.getOriginPlace());
+        product.setContactChannel(input.getContactChannel());
+        product.setShippingAddress(input.getShippingAddress());
+        product.setReturnSupported(input.getReturnSupported());
         product.setNegotiable(input.getNegotiable());
         if (changed) {
             product.setListingRevision(product.getListingRevision() + 1);
@@ -239,6 +262,26 @@ public class ProductService {
         return product.getStatus() == ProductStatus.ON_SALE || product.getStatus() == ProductStatus.SOLD_OUT;
     }
 
+    private void validateOptional(Product product) {
+        for (String value : new String[] {product.getBrand(), product.getModelName(), product.getUsageYears(),
+                product.getOriginPlace(), product.getContactChannel(), product.getShippingAddress()}) {
+            BusinessException.require(value == null || value.length() <= 200, "可选字段不超过200字");
+        }
+        String extras = product.getExtraImages();
+        BusinessException.require(extras == null || extras.length() <= 2000, "附图地址过长");
+        if (extras != null && !extras.isBlank()) {
+            String[] urls = extras.strip().split("\\s+");
+            BusinessException.require(urls.length <= 8, "最多8张附图");
+            for (String url : urls) {
+                BusinessException.require(url.matches("https://[^\\s]+\\.(?i:png|jpg|jpeg|webp)")
+                        || url.matches("/media/[a-zA-Z0-9.-]+"), "附图地址无效");
+            }
+        }
+        String video = product.getVideoUrl();
+        BusinessException.require(video == null || video.isBlank() || video.matches("https://[^\\s]+\\.(?i:mp4|webm)")
+                || video.matches("/media/[a-zA-Z0-9.-]+\\.(mp4|webm)"), "至多一个MP4/WebM视频地址");
+    }
+
     private void validate(Product product) {
         BusinessException.require(product.getName() != null && !product.getName().isBlank(), "请填写名称");
         BusinessException.require(product.getCategory() != null && product.getCategory().matches("[^/]+/[^/]+"),
@@ -249,7 +292,7 @@ public class ProductService {
                 "请填写描述");
         BusinessException.require(product.getImageUrl() != null
                 && (product.getImageUrl().matches("https://[^\\s]+\\.(?i:png|jpg|jpeg|webp)")
-                || product.getImageUrl().equals("/images/sample.svg")), "请提供 HTTPS 图片地址或使用本地示例图");
+                || product.getImageUrl().equals("/images/sample.svg") || product.getImageUrl().matches("/media/[a-zA-Z0-9.-]+")), "请提供 HTTPS 图片地址或使用本地示例图");
         BusinessException.require(product.getMinPrice() != null && product.getMaxPrice() != null
                 && product.getMinPrice().signum() > 0
                 && product.getMinPrice().scale() <= 2 && product.getMaxPrice().scale() <= 2

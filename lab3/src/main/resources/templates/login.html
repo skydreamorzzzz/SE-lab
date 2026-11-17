@@ -5,4 +5,5 @@
 <main class="content"><h1>欢迎回来</h1>
 <p class="notice" th:if="${param.error}">用户名或密码错误</p><p class="notice" th:if="${param.registered}">注册成功，请登录</p>
 <form class="panel stack" th:action="@{/login}" method="post"><label>用户名<input name="username" required autocomplete="username"></label><label>密码<input type="password" name="password" required autocomplete="current-password"></label><button>登录</button><a th:href="@{/register}">创建账户</a></form>
+<a th:href="@{/recover}">使用恢复凭证找回密码</a>
 </main></div></body></html>

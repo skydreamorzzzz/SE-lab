@@ -13,6 +13,14 @@ public class Account {
     private boolean superAdmin;
     @Column(nullable = false, columnDefinition = "boolean default false")
     private boolean banned;
+    @Column(unique = true)
+    private String phone;
+    private String recoveryHash;
+    private String phoneChallengeHash;
+    private String pendingPhone;
+    private java.time.Instant phoneChallengeExpires;
+    @Column(nullable = false, columnDefinition = "integer default 0")
+    private int phoneAttempts;
     @Id
     @GeneratedValue
     private Long id;
@@ -82,5 +90,53 @@ public class Account {
 
     public void setBanned(boolean value) {
         banned = value;
+    }
+
+    public String getPhone() {
+        return phone;
+    }
+
+    public void setPhone(String value) {
+        phone = value;
+    }
+
+    public String getRecoveryHash() {
+        return recoveryHash;
+    }
+
+    public void setRecoveryHash(String value) {
+        recoveryHash = value;
+    }
+
+    public String getPhoneChallengeHash() {
+        return phoneChallengeHash;
+    }
+
+    public void setPhoneChallengeHash(String value) {
+        phoneChallengeHash = value;
+    }
+
+    public String getPendingPhone() {
+        return pendingPhone;
+    }
+
+    public void setPendingPhone(String value) {
+        pendingPhone = value;
+    }
+
+    public java.time.Instant getPhoneChallengeExpires() {
+        return phoneChallengeExpires;
+    }
+
+    public void setPhoneChallengeExpires(java.time.Instant value) {
+        phoneChallengeExpires = value;
+    }
+
+    public int getPhoneAttempts() {
+        return phoneAttempts;
+    }
+
+    public void setPhoneAttempts(int value) {
+        phoneAttempts = value;
     }
 }
