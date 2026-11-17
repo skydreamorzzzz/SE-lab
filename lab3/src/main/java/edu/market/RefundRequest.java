@@ -11,12 +11,13 @@ import java.time.Instant;
 
 public class RefundRequest {
     @jakarta.persistence.ManyToOne(fetch = jakarta.persistence.FetchType.LAZY)
-    @jakarta.persistence.JoinColumn(name = "orderId", insertable = false, updatable = false)
+    @jakarta.persistence.JoinColumn(name = "order_id", insertable = false, updatable = false)
     private PurchaseOrder orderIdReference;
     @Id
     @GeneratedValue
     private Long id;
     @jakarta.persistence.Basic(optional = false)
+    @jakarta.persistence.Column(name = "order_id")
     private Long orderId;
     @Column(length = 2000)
     private String previousStatus;

@@ -59,4 +59,3 @@
       .fixed-actions{height:76px;padding:8px 12px max(8px,env(safe-area-inset-bottom));gap:9px}.left-actions{gap:4px}.dock-link{width:49px;font-size:10px}.dock-link svg{height:21px;width:21px}.right-actions{gap:7px;flex:1;justify-content:flex-end}.action-btn{height:43px;min-width:0;flex:1;padding:0 14px;font-size:14px}.toast{bottom:91px}
     }
     @media(max-width:370px){.action-btn{padding:0 10px}.dock-link{width:41px}.left-actions{gap:0}.fixed-actions{padding-left:8px;padding-right:8px}}
-  

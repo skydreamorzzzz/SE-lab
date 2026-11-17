@@ -11,17 +11,19 @@ import java.time.Instant;
 
 public class PersonalEntry {
     @jakarta.persistence.ManyToOne(fetch = jakarta.persistence.FetchType.LAZY)
-    @jakarta.persistence.JoinColumn(name = "ownerId", insertable = false, updatable = false)
+    @jakarta.persistence.JoinColumn(name = "owner_id", insertable = false, updatable = false)
     private Account ownerIdReference;
     @Id
     @GeneratedValue
     private Long id;
     @jakarta.persistence.Basic(optional = false)
+    @jakarta.persistence.Column(name = "owner_id")
     private Long ownerId;
     @Column(length = 2000)
     private String kind;
     @Column(length = 2000)
     private String targetKey;
+    @jakarta.persistence.Column(name = "target_id")
     private Long targetId;
     private int quantity;
     @Column(length = 2000)

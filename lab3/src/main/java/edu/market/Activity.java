@@ -14,6 +14,7 @@ public class Activity {
     private Instant occurredAt;
     private String actor;
     private String objectType;
+    @jakarta.persistence.Column(name = "object_id")
     private Long objectId;
     private String operation;
     @Column(length = 500)

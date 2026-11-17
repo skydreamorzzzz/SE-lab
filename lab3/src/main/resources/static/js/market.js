@@ -32,5 +32,11 @@ window.Market = (() => {
   }
   const post = (path, data = {}) => request(path, { method: 'POST', body: new URLSearchParams(data) });
   const requireLogin = () => { if (!authenticated()) { go('/login'); return false; } return true; };
-  return { escape, authenticated, requireLogin, go, toast, request, post };
+  const submit = (path, data={}) => {
+    const form=document.createElement('form');form.method='post';form.action=path;
+    const fields={...data,_csrf:document.querySelector('meta[name=csrf]')?.content || document.querySelector('input[name=_csrf]')?.value};
+    for(const [name,value] of Object.entries(fields)){const input=document.createElement('input');input.type='hidden';input.name=name;input.value=value;form.append(input);}
+    document.body.append(form);form.submit();
+  };
+  return { escape, authenticated, requireLogin, go, toast, request, post, submit };
 })();

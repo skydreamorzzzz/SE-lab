@@ -90,12 +90,24 @@ async function catalogChecks(seller,buyer,admin,ids) {
   const response=await buyer.request.get(base+'/api/catalog');const json=await response.text();assert(!json.includes('"passwordHash":')&&!json.includes('"recoveryHash":')&&!json.includes('"phone":'));
   checks.push('original home/search structure, real filtering, favorite persistence, nearby coordinates and safe public DTOs');
 }
+async function productChecks(seller,buyer,admin,ids) {
+ await compare(buyer,'商品展示','/products/'+ids[0],'detail',['.app','.topbar','.seller-card','.hero']);
+ await buyer.locator('#commentContent').fill('设计验收：配件是否齐全？');await buyer.locator('#commentForm button').click();await buyer.waitForFunction(()=>document.querySelector('#commentList').textContent.includes('配件是否齐全'));
+ await seller.goto(base+'/products/'+ids[0]);await seller.locator('[data-comment-reply] textarea').fill('配件齐全，支持当面检查');await seller.locator('[data-comment-reply] button').click();await seller.waitForFunction(()=>document.querySelector('#commentList').textContent.includes('支持当面检查'));
+ await buyer.reload();await buyer.evaluate(()=>openModal('bargain'));await buyer.locator('#offer').fill('459');await buyer.locator('#offerMessage').fill('原型议价说明实际保存');await buyer.locator('#confirmBtn').click();await buyer.waitForURL(base+'/bargains');assert((await buyer.locator('body').innerText()).includes('原型议价说明实际保存'));
+ await compare(seller,'出售商品','/seller/edit','publish',['.app','.top','.media-list','.intro']);
+ await seller.locator('#samplePhoto').click();await seller.locator('#productName').fill('原版发布页真实商品');await seller.locator('#description').fill('通过原型图片网格、标签和保存草稿功能提交');await seller.locator('#minPrice').fill('30');await seller.locator('#maxPrice').fill('40');await seller.locator('#quantity').fill('2');await seller.locator('#saveTop').click();await seller.waitForFunction(()=>Boolean(document.querySelector('#publishData').dataset.id));const id=await seller.locator('#publishData').getAttribute('data-id');
+ await seller.goto(base+'/seller/edit?id='+id);assert.equal(await seller.locator('#productName').inputValue(),'原版发布页真实商品');assert.equal(await seller.locator('.photo').count(),1);await seller.locator('#publishBtn').click();await seller.locator('#modalBack.show').waitFor();await post(admin,'/admin/'+id+'/audit',{approve:true,note:'发布页验收通过'});
+ await buyer.goto(base+'/products/'+id);await buyer.evaluate(()=>openModal('buy'));await buyer.locator('#confirmBtn').click();await buyer.waitForURL(/\/orders\/\d+$/);const orderId=buyer.url().split('/').pop();await post(buyer,'/orders/'+orderId+'/pay',{});await post(seller,'/orders/'+orderId+'/ship',{});await post(buyer,'/orders/'+orderId+'/receive',{});await post(buyer,'/reviews/'+orderId,{rating:5,content:'原版购买弹窗交易完成'});
+ checks.push('original detail/publish structures, persistent drafts, seller comment replies, quote message and complete real order flow');
+}
 async function run() {
   start();await ready();browser=await chromium.launch({executablePath:process.env.CHROME_PATH||'C:/Program Files/Google/Chrome/Application/chrome.exe',headless:true});
   const seller=await browser.newPage({viewport:{width:1280,height:1000}}),buyer=await browser.newPage({viewport:{width:1280,height:1000}}),admin=await browser.newPage({viewport:{width:1280,height:1000}});
   const errors=[];for(const page of [seller,buyer,admin])page.on('pageerror',e=>errors.push(e.message));
   await register(seller,'seller');await register(buyer,'buyer');await login(admin,'admin');const ids=await seed(seller,admin);
   await catalogChecks(seller,buyer,admin,ids);
+  if(stage!=='catalog')await productChecks(seller,buyer,admin,ids);
   assert.deepEqual(errors,[]);
   const result={passed:true,stage,checks,comparisons,consoleErrors:errors};fs.writeFileSync(path.join(output,'results.json'),JSON.stringify(result,null,2)+'\n');console.log(JSON.stringify(result,null,2));
 }

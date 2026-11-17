@@ -12,27 +12,31 @@ import java.time.Instant;
 @Table(uniqueConstraints = @UniqueConstraint(columnNames = {"orderId", "authorId"}))
 public class Review {
     @jakarta.persistence.ManyToOne(fetch = jakarta.persistence.FetchType.LAZY)
-    @jakarta.persistence.JoinColumn(name = "authorId", insertable = false, updatable = false)
+    @jakarta.persistence.JoinColumn(name = "author_id", insertable = false, updatable = false)
     private Account authorIdReference;
     @jakarta.persistence.ManyToOne(fetch = jakarta.persistence.FetchType.LAZY)
-    @jakarta.persistence.JoinColumn(name = "recipientId", insertable = false, updatable = false)
+    @jakarta.persistence.JoinColumn(name = "recipient_id", insertable = false, updatable = false)
     private Account recipientIdReference;
     @jakarta.persistence.ManyToOne(fetch = jakarta.persistence.FetchType.LAZY)
-    @jakarta.persistence.JoinColumn(name = "productId", insertable = false, updatable = false)
+    @jakarta.persistence.JoinColumn(name = "product_id", insertable = false, updatable = false)
     private Product productIdReference;
     @jakarta.persistence.ManyToOne(fetch = jakarta.persistence.FetchType.LAZY)
-    @jakarta.persistence.JoinColumn(name = "orderId", insertable = false, updatable = false)
+    @jakarta.persistence.JoinColumn(name = "order_id", insertable = false, updatable = false)
     private PurchaseOrder orderIdReference;
     @Id
     @GeneratedValue
     private Long id;
     @jakarta.persistence.Basic(optional = false)
+    @jakarta.persistence.Column(name = "order_id")
     private Long orderId;
     @jakarta.persistence.Basic(optional = false)
+    @jakarta.persistence.Column(name = "product_id")
     private Long productId;
     @jakarta.persistence.Basic(optional = false)
+    @jakarta.persistence.Column(name = "author_id")
     private Long authorId;
     @jakarta.persistence.Basic(optional = false)
+    @jakarta.persistence.Column(name = "recipient_id")
     private Long recipientId;
     private int rating;
     @Column(length = 2000)

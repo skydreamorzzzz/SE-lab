@@ -30,8 +30,8 @@ public class SecurityConfig {
     @Bean
     SecurityFilterChain securityFilterChain(HttpSecurity http, AccountAccessFilter accountAccess) throws Exception {
         http.authorizeHttpRequests(auth -> auth
-                .requestMatchers("/", "/search", "/api/catalog", "/api/products/*/comments", "/products/*", "/sellers/*", "/login", "/register", "/recover", "/ranking", "/availability/*", "/js/**", "/css/**", "/images/**", "/error")
-                .permitAll().requestMatchers(org.springframework.http.HttpMethod.GET, "/media/*").permitAll()
+                .requestMatchers("/", "/search", "/api/catalog", "/products/*", "/sellers/*", "/login", "/register", "/recover", "/ranking", "/availability/*", "/js/**", "/css/**", "/images/**", "/error")
+                .permitAll().requestMatchers(org.springframework.http.HttpMethod.GET, "/media/*", "/api/products/*/comments").permitAll()
                 .requestMatchers("/admin/**").hasRole("ADMIN")
                 .requestMatchers("/seller/**").hasRole("SELLER").anyRequest().authenticated())
                 .formLogin(form -> form.loginPage("/login").defaultSuccessUrl("/", true).permitAll())

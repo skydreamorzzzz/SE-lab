@@ -123,7 +123,9 @@ public class TradingService {
         item.setAllocated(0);
         item.setConfirmed(item.getQuantity() == 0);
         activities.record(username, "RESERVATION", id, "CONFIRM", "ORDER_CREATED");
-        return newOrder(buyer, product, quantity, "reservation:" + UUID.randomUUID());
+        PurchaseOrder order = newOrder(buyer, product, quantity, "reservation:" + UUID.randomUUID());
+        order.setReservationId(item.getId());
+        return order;
     }
 
     public void action(String username, Long id, String action) {

@@ -10,26 +10,34 @@ import jakarta.persistence.Enumerated;
 import jakarta.persistence.EnumType;
 
 @Entity
-@jakarta.persistence.Table(indexes = {@jakarta.persistence.Index(name = "idx_order_timeout", columnList = "status,createdAt"), @jakarta.persistence.Index(name = "idx_order_buyer", columnList = "buyerId"), @jakarta.persistence.Index(name = "idx_order_seller", columnList = "sellerId"), @jakarta.persistence.Index(name = "idx_order_rank", columnList = "status,completedAt,productId")})
+@jakarta.persistence.Table(indexes = {@jakarta.persistence.Index(name = "idx_order_timeout", columnList = "status,createdAt"), @jakarta.persistence.Index(name = "idx_order_buyer", columnList = "buyer_id"), @jakarta.persistence.Index(name = "idx_order_seller", columnList = "seller_id"), @jakarta.persistence.Index(name = "idx_order_rank", columnList = "status,completedAt,product_id")})
 public class PurchaseOrder {
     private java.time.Instant completedAt;
     @jakarta.persistence.ManyToOne(fetch = jakarta.persistence.FetchType.LAZY)
-    @jakarta.persistence.JoinColumn(name = "buyerId", insertable = false, updatable = false)
+    @jakarta.persistence.JoinColumn(name = "buyer_id", insertable = false, updatable = false)
     private Account buyerIdReference;
     @jakarta.persistence.ManyToOne(fetch = jakarta.persistence.FetchType.LAZY)
-    @jakarta.persistence.JoinColumn(name = "sellerId", insertable = false, updatable = false)
+    @jakarta.persistence.JoinColumn(name = "seller_id", insertable = false, updatable = false)
     private Account sellerIdReference;
     @jakarta.persistence.ManyToOne(fetch = jakarta.persistence.FetchType.LAZY)
-    @jakarta.persistence.JoinColumn(name = "productId", insertable = false, updatable = false)
+    @jakarta.persistence.JoinColumn(name = "product_id", insertable = false, updatable = false)
     private Product productIdReference;
+    @jakarta.persistence.Column(name = "reservation_id")
+    private Long reservationId;
+    @jakarta.persistence.ManyToOne(fetch = jakarta.persistence.FetchType.LAZY)
+    @jakarta.persistence.JoinColumn(name = "reservation_id", insertable = false, updatable = false)
+    private Reservation reservationReference;
     @Id
     @GeneratedValue
     private Long id;
     @jakarta.persistence.Basic(optional = false)
+    @jakarta.persistence.Column(name = "product_id")
     private Long productId;
     @jakarta.persistence.Basic(optional = false)
+    @jakarta.persistence.Column(name = "buyer_id")
     private Long buyerId;
     @jakarta.persistence.Basic(optional = false)
+    @jakarta.persistence.Column(name = "seller_id")
     private Long sellerId;
     private String productName;
     private int quantity;
@@ -167,5 +175,19 @@ public class PurchaseOrder {
 
     public void setCompletedAt(java.time.Instant value) {
         completedAt = value;
+    }
+
+    public Long getReservationId() {
+        return reservationId;
+    }
+
+    public void setReservationId(Long value) {
+        reservationId = value;
+    }
+    public String getType() {
+        if (reservationId != null) {
+            return "RESERVATION";
+        }
+        return requestKey != null && requestKey.startsWith("bargain:") ? "BARGAIN" : "PURCHASE";
     }
 }

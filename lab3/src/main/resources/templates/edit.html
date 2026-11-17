@@ -1,17 +1,77 @@
-<!doctype html>
+<!DOCTYPE html>
+
 <html lang="zh-CN" xmlns:th="http://www.thymeleaf.org">
-<head th:replace="~{fragments :: head('发布闲置')}"></head>
-<body><div class="app"><header th:replace="~{fragments :: header}"></header>
-<main class="content"><h1>发布闲置</h1>
-<form class="panel stack" th:action="@{/seller/save}" method="post"><input type="hidden" name="id" th:value="${product.id}">
-<label>宝贝名称<input name="name" maxlength="100" th:value="${product.name}"></label>
-<label>商品分类（一级/二级）<input name="category" placeholder="数码电子/相机" th:value="${product.category}"></label>
-<label>新旧程度<input name="conditionLabel" placeholder="9成新" th:value="${product.conditionLabel}"></label>
-<label>图片地址<input name="imageUrl" placeholder="https://.../photo.jpg 或 /images/sample.svg" th:value="${product.imageUrl}"></label><small>演示可填写 /images/sample.svg；支持 PNG/JPG/WEBP 的 HTTPS 图片地址。</small>
-<label>真实描述<textarea name="description" maxlength="2000" th:text="${product.description}"></textarea></label>
-<label>最低售价<input type="number" name="minPrice" step="0.01" min="0.01" th:value="${product.minPrice}"></label>
-<label>最高售价<input type="number" name="maxPrice" step="0.01" min="0.01" th:value="${product.maxPrice}"></label>
-<label>计划预约总量<input type="number" name="reservationLimit" min="0" th:value="${product.reservationLimit}"></label>
-<small>允许保存不完整草稿；提交审核前校验完整性。库存请在商品管理中单独调整。</small><label>支持议价<input type="checkbox" name="negotiable" value="true" th:checked="${product.negotiable}"></label><label>附图地址（最多8张，空白分隔）<textarea name="extraImages" th:text="${product.extraImages}"></textarea></label><label>视频地址（至多一个）<input name="videoUrl" th:value="${product.videoUrl}"></label><label>品牌<input name="brand" maxlength="200" th:value="${product.brand}"></label><label>型号<input name="modelName" maxlength="200" th:value="${product.modelName}"></label><label>使用年限<input name="usageYears" maxlength="200" th:value="${product.usageYears}"></label><label>产地<input name="originPlace" maxlength="200" th:value="${product.originPlace}"></label><label>客服渠道<input name="contactChannel" maxlength="200" th:value="${product.contactChannel}"></label><label>发货地址<input name="shippingAddress" maxlength="200" th:value="${product.shippingAddress}"></label><label>支持退货<input type="checkbox" name="returnSupported" value="true" th:checked="${product.returnSupported}"></label><a th:href="@{/media/upload}" target="_blank">打开媒体上传（复制地址后粘贴）</a><button>保存草稿 / 修改内容</button></form>
-<label>议价设置（关键字段修改需复审）</label>
-</main></div></body></html>
+<head><link href="/css/lab2-edit.css" rel="stylesheet"/>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1, viewport-fit=cover" name="viewport"/>
+<title>拾物集 · 发布闲置</title>
+
+<meta name="csrf" th:content="${_csrf.token}"/><meta name="csrf-header" th:content="${_csrf.headerName}"/><meta name="authenticated" th:content="${viewer != null}"/><link href="/css/lab2-integration.css" rel="stylesheet"/><script defer="" src="/js/market.js"></script></head>
+<body>
+<div class="app" id="publishData" th:attr="data-id=${product.id},data-stock=${product.stock},data-revision=${product.listingRevision},data-state=${product.status}">
+<header class="top">
+<div class="top-left">
+<button aria-label="退出发布页面" class="close" id="exitBtn" title="退出发布页面" type="button">
+<svg fill="none" stroke="currentColor" stroke-linecap="round" stroke-width="2" viewbox="0 0 24 24"><path d="M5 5l14 14M19 5L5 19"></path></svg>
+</button>
+<span class="top-title">发布闲置</span><span class="sub-heading">把闲置转给更需要的人</span>
+</div>
+<div class="top-right">
+<button class="save-link" id="saveTop" type="button">保存草稿</button>
+<button class="publish" id="publishBtn" type="button">发布</button>
+</div>
+</header>
+<main class="content">
+<div class="intro"><h1>卖点闲置，让好物继续发光 <span aria-hidden="true" style="font-size:22px">✦</span></h1><p>填写宝贝信息，发布后将交由平台审核。</p></div>
+<section aria-labelledby="photosTitle" class="panel" id="photosSection">
+<div class="panel-head"><h2 class="panel-title" id="photosTitle"><i class="bullet"></i>上传宝贝照片 <span class="required">*</span></h2><span class="panel-desc" id="photoCount">0 / 9 张</span></div>
+<div class="media-list" id="mediaList">
+<label aria-label="上传图片" class="add-tile" for="photoInput" id="addTile" role="button" tabindex="0">
+<svg fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" viewbox="0 0 36 36"><path d="M5 12h7l3-4h7l3 4h6v17H5z"></path><circle cx="18" cy="20" r="5"></circle><path d="M27 7v7M23.5 10.5h7"></path></svg>
+<strong>添加照片</strong><span>最多 9 张</span>
+</label>
+<input accept="image/png,image/jpeg,image/webp" hidden="" id="photoInput" multiple="" type="file"/>
+</div>
+<div class="media-hint"><svg fill="none" stroke="currentColor" stroke-width="1.8" viewbox="0 0 20 20"><circle cx="10" cy="10" r="8"></circle><path d="M10 9v5M10 5.5v1"></path></svg>首张图片将作为封面；清晰的实物照片更容易吸引买家。</div>
+<button class="save-link" id="samplePhoto" type="button">使用本地示例图</button><p class="media-hint" id="uploadStatus" role="status"></p></section>
+<section aria-labelledby="tagTitle" class="panel">
+<div class="panel-head"><h2 class="panel-title" id="tagTitle"><i class="bullet"></i>给宝贝贴标签</h2><span class="panel-desc">方便买家搜索到你的宝贝</span></div>
+<div class="name-block"><label class="field-label" for="productName">宝贝名称 <span class="required">*</span></label><input class="name-field" id="productName" maxlength="60" placeholder="例如：九成新数码相机，功能正常，配件齐全" th:value="${product.name}"/></div>
+<div class="tag-row"><div class="tag-label">商品分类 <span class="required">*</span></div><div class="tag-options" id="categoryTags">
+<button class="tag selected" data-value="数码电子" type="button">数码电子</button><button class="tag" data-value="影音设备" type="button">影音设备</button><button class="tag" data-value="家居生活" type="button">家居生活</button><button class="tag" data-value="办公学习" type="button">办公学习</button><button class="tag" data-value="服饰箱包" type="button">服饰箱包</button><button class="tag" data-value="其他" type="button">其他</button>
+</div><label class="secondary-category">二级分类<input class="location-field" id="categoryDetail" maxlength="40" placeholder="例如：相机、耳机、书籍"/></label></div>
+<div class="tag-row"><div class="tag-label">新旧程度 <span class="required">*</span></div><div class="tag-options" id="conditionTags">
+<button class="tag" data-value="全新" type="button">全新</button><button class="tag" data-value="近全新" type="button">近全新</button><button class="tag selected" data-value="9成新" type="button">9成新</button><button class="tag" data-value="8成新" type="button">8成新</button><button class="tag" data-value="7成新及以下" type="button">7成新及以下</button>
+</div></div>
+<div class="tag-row"><div class="tag-label">交易标签</div><div aria-label="选择交易标签，可多选" class="tag-options" id="extraTags">
+<button class="tag selected" data-value="可议价" type="button">可议价</button><button class="tag" data-value="同城自提" type="button">同城自提</button><button class="tag selected" data-value="支持邮寄" type="button">支持邮寄</button><button class="tag" data-value="配件齐全" type="button">配件齐全</button>
+</div></div>
+<div class="tag-row"><label class="tag-label" for="city">所在地区</label><div class="location-box"><svg fill="none" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" viewbox="0 0 24 24"><path d="M19 10c0 5-7 11-7 11S5 15 5 10a7 7 0 1 1 14 0z"></path><circle cx="12" cy="10" r="2"></circle></svg><input class="location-field" id="city" maxlength="40" placeholder="填写城市或区域，例如：南京 · 鼓楼区" th:value="${product.city}"/></div></div>
+<div class="tags-note">价格、新旧程度、分类及地区可以参与搜索筛选；卖家销量与好评率由平台统计，不由卖家自行填写。</div>
+</section>
+<section aria-labelledby="descTitle" class="panel" id="descSection">
+<div class="panel-head"><h2 class="panel-title" id="descTitle"><i class="bullet"></i>宝贝描述 <span class="required">*</span></h2><span class="panel-desc">真实描述能让交易更顺利</span></div>
+<textarea class="text-area" id="description" maxlength="1000" placeholder="说说宝贝的使用情况、成色、瑕疵、配件和出售原因吧……
+
+例如：自用一年，功能正常，屏幕无划痕，附原装充电线，可同城自提。" th:text="${product.description}"></textarea>
+<div class="text-footer"><span>建议注明瑕疵与配件，减少交易争议</span><span class="wordcount"><span id="charCount">0</span> / 1000</span></div>
+</section>
+<section aria-labelledby="tradeTitle" class="panel" id="tradeSection">
+<div class="panel-head"><h2 class="panel-title" id="tradeTitle"><i class="bullet"></i>价格与数量</h2><span class="panel-desc">支持定价或区间议价</span></div>
+<div class="trade-grid">
+<div><label class="field-label" for="minPrice">最低售价 <span class="required">*</span></label><div class="input-shell"><span>¥</span><input class="price-field" id="minPrice" min="0.01" placeholder="0.00" step="0.01" th:value="${product.minPrice}" type="number"/></div><div class="input-foot">买家议价不可低于该价格</div></div>
+<div><label class="field-label" for="maxPrice">最高售价 <span class="required">*</span></label><div class="input-shell"><span>¥</span><input class="price-field" id="maxPrice" min="0.01" placeholder="0.00" step="0.01" th:value="${product.maxPrice}" type="number"/></div><div class="input-foot">与最低价相同即为固定价格</div></div>
+<div><label class="field-label" for="quantity">数量 <span class="required">*</span></label><div class="input-shell"><input class="price-field" id="quantity" min="0" step="1" th:value="${product.id == null ? 1 : product.stock}" type="number" value="1"/><span style="color:#9da3ab;font-size:12px">件</span></div><div class="input-foot">填写现有库存</div></div>
+</div>
+<div class="meta-panel"><b>发布审核</b><span>点击「发布」后，商品先进入待审核状态，审核通过后才会在首页展示。</span></div>
+<details class="optional-fields"><summary>补充预约计划、品牌、视频与附近位置</summary><div class="trade-grid"><label>计划预约总量<input id="reservationLimit" max="1000000" min="0" th:value="${product.reservationLimit}" type="number"/></label><label>品牌<input id="brand" maxlength="200" th:value="${product.brand}"/></label><label>型号<input id="modelName" maxlength="200" th:value="${product.modelName}"/></label><label>使用年限<input id="usageYears" maxlength="200" th:value="${product.usageYears}"/></label><label>产地<input id="originPlace" maxlength="200" th:value="${product.originPlace}"/></label><label>客服渠道<input id="contactChannel" maxlength="200" th:value="${product.contactChannel}"/></label><label>发货地址<input id="shippingAddress" maxlength="200" th:value="${product.shippingAddress}"/></label><label>交易纬度<input id="latitude" max="90" min="-90" step="any" th:value="${product.latitude}" type="number"/></label><label>交易经度<input id="longitude" max="180" min="-180" step="any" th:value="${product.longitude}" type="number"/></label><label>视频地址<input id="videoUrl" placeholder="一个MP4/WebM地址" th:value="${product.videoUrl}"/></label><label>上传视频<input accept="video/mp4,video/webm" id="videoInput" type="file"/></label><label>支持退货<input id="returnSupported" th:checked="${product.returnSupported}" type="checkbox"/></label></div><p>坐标可不填；未提供位置时，不参与附近距离检索。收货与退款仍以订单售后流程为准。</p></details></section>
+<div class="final-row"><span>请确保图片、描述与商品实际状况一致。</span><button id="saveBottom" type="button">保存草稿</button></div>
+</main>
+</div>
+<div aria-live="polite" class="toast" id="toast" role="status"></div>
+<div aria-labelledby="modalTitle" aria-modal="true" class="modal-back" id="modalBack" role="dialog">
+<div class="modal"><div class="modal-icon"><svg fill="none" height="31" stroke="currentColor" stroke-width="2" viewbox="0 0 24 24" width="31"><path d="M4 12l5 5L20 6"></path></svg></div><h2 id="modalTitle">提交审核成功</h2><p id="modalText">商品已发送至服务器，审核通过后会在商城展示。</p><div class="modal-acts"><button id="modalStay" type="button">查看商品管理</button><button class="primary" id="modalExit" type="button">返回首页</button></div></div>
+</div>
+
+<script th:inline="javascript">window.publishInitial = /*[[${publishInitial}]]*/ {};</script><script defer="" src="/js/lab2-edit.js"></script></body>
+</html>

@@ -329,7 +329,8 @@ public class ProductService {
             BusinessException.require(urls.length <= 8, "最多8张附图");
             for (String url : urls) {
                 BusinessException.require(url.matches("https://[^\\s]+\\.(?i:png|jpg|jpeg|webp)")
-                        || url.matches("/media/[a-zA-Z0-9.-]+"), "附图地址无效");
+                        || url.matches("/media/[a-zA-Z0-9.-]+") || url.equals("/images/sample.svg")
+                        || url.matches("/images/lab2/(camera|headphones|keyboard|lamp)\\.svg"), "附图地址无效");
             }
         }
         String video = product.getVideoUrl();

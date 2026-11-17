@@ -9,7 +9,7 @@ import jakarta.persistence.Enumerated;
 import jakarta.persistence.EnumType;
 
 @Entity
-@jakarta.persistence.Table(indexes = {@jakarta.persistence.Index(name = "idx_product_visible", columnList = "status,publishedAt,id"), @jakarta.persistence.Index(name = "idx_product_seller", columnList = "sellerId"), @jakarta.persistence.Index(name = "idx_product_category", columnList = "category,status")})
+@jakarta.persistence.Table(indexes = {@jakarta.persistence.Index(name = "idx_product_visible", columnList = "status,publishedAt,id"), @jakarta.persistence.Index(name = "idx_product_seller", columnList = "seller_id"), @jakarta.persistence.Index(name = "idx_product_category", columnList = "category,status")})
 public class Product {
     @Column(nullable = false, columnDefinition = "boolean default false")
     private boolean negotiable;
@@ -36,7 +36,7 @@ public class Product {
     @Column(nullable = false, columnDefinition = "boolean default false")
     private boolean returnSupported;
     @jakarta.persistence.ManyToOne(fetch = jakarta.persistence.FetchType.LAZY)
-    @jakarta.persistence.JoinColumn(name = "sellerId", insertable = false, updatable = false)
+    @jakarta.persistence.JoinColumn(name = "seller_id", insertable = false, updatable = false)
     private Account sellerIdReference;
     private String city;
     private Double latitude;
@@ -46,6 +46,7 @@ public class Product {
     @GeneratedValue
     private Long id;
     @jakarta.persistence.Basic(optional = false)
+    @jakarta.persistence.Column(name = "seller_id")
     private Long sellerId;
     private String name;
     private String category;

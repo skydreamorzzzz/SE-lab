@@ -9,12 +9,13 @@ import jakarta.persistence.Column;
 
 public class MediaAsset {
     @jakarta.persistence.ManyToOne(fetch = jakarta.persistence.FetchType.LAZY)
-    @jakarta.persistence.JoinColumn(name = "ownerId", insertable = false, updatable = false)
+    @jakarta.persistence.JoinColumn(name = "owner_id", insertable = false, updatable = false)
     private Account ownerIdReference;
     @Id
     @GeneratedValue
     private Long id;
     @jakarta.persistence.Basic(optional = false)
+    @jakarta.persistence.Column(name = "owner_id")
     private Long ownerId;
     @Column(length = 2000)
     private String storedName;

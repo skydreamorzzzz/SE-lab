@@ -11,7 +11,7 @@ import java.time.LocalDate;
 
 public class ModerationCase {
     @jakarta.persistence.ManyToOne(fetch = jakarta.persistence.FetchType.LAZY)
-    @jakarta.persistence.JoinColumn(name = "authorId", insertable = false, updatable = false)
+    @jakarta.persistence.JoinColumn(name = "author_id", insertable = false, updatable = false)
     private Account authorIdReference;
     @Id
     @GeneratedValue
@@ -20,8 +20,10 @@ public class ModerationCase {
     private String kind;
     @Column(length = 2000)
     private String targetType;
+    @jakarta.persistence.Column(name = "target_id")
     private Long targetId;
     @jakarta.persistence.Basic(optional = false)
+    @jakarta.persistence.Column(name = "author_id")
     private Long authorId;
     @Column(length = 2000)
     private String reason;

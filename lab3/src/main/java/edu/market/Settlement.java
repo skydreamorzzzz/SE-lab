@@ -11,18 +11,19 @@ import java.math.BigDecimal;
 
 public class Settlement {
     @jakarta.persistence.ManyToOne(fetch = jakarta.persistence.FetchType.LAZY)
-    @jakarta.persistence.JoinColumn(name = "orderId", insertable = false, updatable = false)
+    @jakarta.persistence.JoinColumn(name = "order_id", insertable = false, updatable = false)
     private PurchaseOrder orderIdReference;
     @jakarta.persistence.ManyToOne(fetch = jakarta.persistence.FetchType.LAZY)
-    @jakarta.persistence.JoinColumn(name = "sellerId", insertable = false, updatable = false)
+    @jakarta.persistence.JoinColumn(name = "seller_id", insertable = false, updatable = false)
     private Account sellerIdReference;
     @Id
     @GeneratedValue
     private Long id;
-    @Column(unique = true)
-    @jakarta.persistence.Basic(optional = false)
+        @jakarta.persistence.Basic(optional = false)
+    @jakarta.persistence.Column(name = "order_id", unique = true)
     private Long orderId;
     @jakarta.persistence.Basic(optional = false)
+    @jakarta.persistence.Column(name = "seller_id")
     private Long sellerId;
     private BigDecimal grossAmount;
     private BigDecimal fee;

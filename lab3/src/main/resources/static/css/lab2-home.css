@@ -77,4 +77,3 @@
       .bottom-nav{height:77px;padding:6px 6px max(8px,env(safe-area-inset-bottom))}.nav{font-size:10px;min-width:53px;gap:5px}.nav svg{width:22px;height:22px}.sell-btn{height:47px;width:51px;border-radius:16px}.sell-nav{margin-top:-18px}.sell-btn svg{width:26px;height:26px}.toast{bottom:92px}
     }
     @media(max-width:360px){.brand-name{font-size:18px}.search button{padding:7px 8px}.art{height:134px}.product-title{font-size:12px}}
-  

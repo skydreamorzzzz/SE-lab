@@ -6,20 +6,22 @@ import jakarta.persistence.Id;
 import java.time.Instant;
 
 @Entity
-@jakarta.persistence.Table(indexes = {@jakarta.persistence.Index(name = "idx_reservation_queue", columnList = "productId,cancelled,confirmed,id")})
+@jakarta.persistence.Table(indexes = {@jakarta.persistence.Index(name = "idx_reservation_queue", columnList = "product_id,cancelled,confirmed,id")})
 public class Reservation {
     @jakarta.persistence.ManyToOne(fetch = jakarta.persistence.FetchType.LAZY)
-    @jakarta.persistence.JoinColumn(name = "buyerId", insertable = false, updatable = false)
+    @jakarta.persistence.JoinColumn(name = "buyer_id", insertable = false, updatable = false)
     private Account buyerIdReference;
     @jakarta.persistence.ManyToOne(fetch = jakarta.persistence.FetchType.LAZY)
-    @jakarta.persistence.JoinColumn(name = "productId", insertable = false, updatable = false)
+    @jakarta.persistence.JoinColumn(name = "product_id", insertable = false, updatable = false)
     private Product productIdReference;
     @Id
     @GeneratedValue
     private Long id;
     @jakarta.persistence.Basic(optional = false)
+    @jakarta.persistence.Column(name = "product_id")
     private Long productId;
     @jakarta.persistence.Basic(optional = false)
+    @jakarta.persistence.Column(name = "buyer_id")
     private Long buyerId;
     private int quantity;
     private int allocated;

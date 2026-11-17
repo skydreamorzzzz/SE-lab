@@ -12,25 +12,29 @@ import java.math.BigDecimal;
 
 public class Bargain {
     @jakarta.persistence.ManyToOne(fetch = jakarta.persistence.FetchType.LAZY)
-    @jakarta.persistence.JoinColumn(name = "buyerId", insertable = false, updatable = false)
+    @jakarta.persistence.JoinColumn(name = "buyer_id", insertable = false, updatable = false)
     private Account buyerIdReference;
     @jakarta.persistence.ManyToOne(fetch = jakarta.persistence.FetchType.LAZY)
-    @jakarta.persistence.JoinColumn(name = "sellerId", insertable = false, updatable = false)
+    @jakarta.persistence.JoinColumn(name = "seller_id", insertable = false, updatable = false)
     private Account sellerIdReference;
     @jakarta.persistence.ManyToOne(fetch = jakarta.persistence.FetchType.LAZY)
-    @jakarta.persistence.JoinColumn(name = "productId", insertable = false, updatable = false)
+    @jakarta.persistence.JoinColumn(name = "product_id", insertable = false, updatable = false)
     private Product productIdReference;
     @jakarta.persistence.ManyToOne(fetch = jakarta.persistence.FetchType.LAZY)
-    @jakarta.persistence.JoinColumn(name = "orderId", insertable = false, updatable = false)
+    @jakarta.persistence.JoinColumn(name = "order_id", insertable = false, updatable = false)
     private PurchaseOrder orderIdReference;
+    private String message;
     @Id
     @GeneratedValue
     private Long id;
     @jakarta.persistence.Basic(optional = false)
+    @jakarta.persistence.Column(name = "product_id")
     private Long productId;
     @jakarta.persistence.Basic(optional = false)
+    @jakarta.persistence.Column(name = "buyer_id")
     private Long buyerId;
     @jakarta.persistence.Basic(optional = false)
+    @jakarta.persistence.Column(name = "seller_id")
     private Long sellerId;
     private int quantity;
     private BigDecimal price;
@@ -39,6 +43,7 @@ public class Bargain {
     private Instant createdAt;
     private Instant expiresAt;
     private long listingRevision;
+    @jakarta.persistence.Column(name = "order_id")
     private Long orderId;
 
     public Long getId() {
@@ -123,5 +128,13 @@ public class Bargain {
 
     public void setOrderId(Long value) {
         orderId = value;
+    }
+
+    public String getMessage() {
+        return message;
+    }
+
+    public void setMessage(String value) {
+        message = value;
     }
 }

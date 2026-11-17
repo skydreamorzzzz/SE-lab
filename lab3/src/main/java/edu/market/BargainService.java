@@ -24,6 +24,13 @@ public class BargainService {
         this.activities = activities;
     }
 
+    public Bargain propose(String username, Long productId, int quantity, BigDecimal price, String message) {
+        BusinessException.require(message != null && message.length() <= 1000, "报价留言不超过1000字");
+        Bargain bargain = propose(username, productId, quantity, price);
+        bargain.setMessage(message);
+        return bargain;
+    }
+
     public Bargain propose(String username, Long productId, int quantity, BigDecimal price) {
         Account buyer = accounts.current(username);
         accounts.requireRole(buyer, "BUYER");

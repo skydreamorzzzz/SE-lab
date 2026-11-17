@@ -103,6 +103,21 @@ public class WebController {
         Product product = products.detail(id, principal == null ? null : principal.getName());
         personal.history(principal == null ? null : principal.getName(), "VIEW", id.toString(), id);
         model.addAttribute("product", product);
+        model.addAttribute("card", design.cards(List.of(product), principal == null ? null : principal.getName(), null, null).getFirst());
+        java.util.ArrayList<String> photos = new java.util.ArrayList<>();
+        if (product.getImageUrl() != null && !product.getImageUrl().isBlank()) {
+            photos.add(product.getImageUrl());
+        }
+        if (product.getExtraImages() != null && !product.getExtraImages().isBlank()) {
+            photos.addAll(List.of(product.getExtraImages().strip().split("\\s+")));
+        }
+        if (photos.isEmpty()) {
+            photos.add("/images/sample.svg");
+        }
+        model.addAttribute("photos", photos);
+        model.addAttribute("tradeTags", product.getTradeTags() == null ? List.of() : List.of(product.getTradeTags().split("\\s+")));
+        model.addAttribute("publishedLabel", product.getPublishedAt() == null ? "尚未上架"
+                : java.time.format.DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm").withZone(java.time.ZoneId.of("Asia/Shanghai")).format(product.getPublishedAt()));
         model.addAttribute("reviews", reviews.findByProductIdOrderByIdDesc(id));
         model.addAttribute("requestKey", UUID.randomUUID().toString());
         model.addAttribute("actualPrice", product.getMinPrice() == null ? null : finance.price(product.getMinPrice()));
@@ -122,6 +137,14 @@ public class WebController {
             products.owner(accounts.current(principal.getName()), product);
         }
         model.addAttribute("product", product);
+        java.util.Map<String, Object> initial = new java.util.HashMap<>();
+        initial.put("category", product.getCategory());
+        initial.put("condition", product.getConditionLabel());
+        initial.put("tags", product.getTradeTags());
+        initial.put("imageUrl", product.getImageUrl());
+        initial.put("extraImages", product.getExtraImages());
+        initial.put("negotiable", product.getNegotiable());
+        model.addAttribute("publishInitial", initial);
         return "edit";
     }
 
