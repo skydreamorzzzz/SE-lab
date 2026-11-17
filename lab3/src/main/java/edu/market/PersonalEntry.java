@@ -5,8 +5,6 @@ import jakarta.persistence.Id;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.Column;
 import java.time.Instant;
-import java.time.LocalDate;
-import java.math.BigDecimal;
 
 @jakarta.persistence.Table(uniqueConstraints = @jakarta.persistence.UniqueConstraint(columnNames = {"ownerId", "kind", "targetKey"}))
 @Entity
@@ -18,6 +16,7 @@ public class PersonalEntry {
     @Id
     @GeneratedValue
     private Long id;
+    @jakarta.persistence.Basic(optional = false)
     private Long ownerId;
     @Column(length = 2000)
     private String kind;

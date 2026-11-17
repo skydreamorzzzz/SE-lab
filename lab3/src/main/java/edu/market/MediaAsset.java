@@ -4,9 +4,6 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.Column;
-import java.time.Instant;
-import java.time.LocalDate;
-import java.math.BigDecimal;
 
 @Entity
 
@@ -17,6 +14,7 @@ public class MediaAsset {
     @Id
     @GeneratedValue
     private Long id;
+    @jakarta.persistence.Basic(optional = false)
     private Long ownerId;
     @Column(length = 2000)
     private String storedName;

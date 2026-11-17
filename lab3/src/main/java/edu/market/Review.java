@@ -26,9 +26,13 @@ public class Review {
     @Id
     @GeneratedValue
     private Long id;
+    @jakarta.persistence.Basic(optional = false)
     private Long orderId;
+    @jakarta.persistence.Basic(optional = false)
     private Long productId;
+    @jakarta.persistence.Basic(optional = false)
     private Long authorId;
+    @jakarta.persistence.Basic(optional = false)
     private Long recipientId;
     private int rating;
     @Column(length = 2000)

@@ -7,7 +7,6 @@ import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -122,5 +121,21 @@ class FinanceTest {
         assertEquals(new BigDecimal("108.00"), settlements.findByOrderId(order.getId()).orElseThrow().getNetAmount());
         finance.settle(order);
         assertEquals(1, settlements.count());
+    }
+    @Test
+    void completedReturnRefundReversesSettlementWithoutLosingAuditHistory() {
+        Product product = publish(1);
+        PurchaseOrder order = buy(product, 1);
+        trading.action("buyer", order.getId(), "pay");
+        trading.action("seller", order.getId(), "ship");
+        trading.action("buyer", order.getId(), "receive");
+        finance.request("buyer", order.getId(), "收货后退货");
+        finance.decide("seller", order.getId(), true, "同意退货退款");
+        finance.returnGoods("buyer", order.getId(), "RETURN-COMPLETED");
+        finance.receivedReturn("seller", order.getId());
+        assertTrue(settlements.findByOrderId(order.getId()).orElseThrow().getReversed());
+        assertEquals(0, product.getSoldQuantity());
+        assertEquals(1, product.getStock());
+        assertEquals(OrderStatus.REFUNDED, order.getStatus());
     }
 }

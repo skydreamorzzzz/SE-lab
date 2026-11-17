@@ -3,7 +3,6 @@ package edu.market;
 import java.math.BigDecimal;
 import java.time.Duration;
 import java.time.Instant;
-import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 

@@ -47,9 +47,26 @@ public class AccountService {
     }
 
     public static void validatePassword(String password) {
-        BusinessException.require(password != null && password.length() >= 8 && password.length() <= 72
-                && password.matches("(?s).*[A-Z].*") && password.matches("(?s).*[a-z].*")
-                && password.matches("(?s).*[0-9].*") && password.matches("(?s).*[^a-zA-Z0-9].*"),
-                "密码需为 8–72 位，并包含大写、小写、数字和特殊字符");
+        java.util.List<String> missing = new java.util.ArrayList<>();
+        String value = password == null ? "" : password;
+        if (value.length() < 8) {
+            missing.add("至少8个字符");
+        }
+        if (value.getBytes(java.nio.charset.StandardCharsets.UTF_8).length > 72) {
+            missing.add("UTF-8编码不超过72字节");
+        }
+        if (!value.matches("(?s).*[A-Z].*")) {
+            missing.add("大写字母");
+        }
+        if (!value.matches("(?s).*[a-z].*")) {
+            missing.add("小写字母");
+        }
+        if (!value.matches("(?s).*[0-9].*")) {
+            missing.add("数字");
+        }
+        if (!value.matches("(?s).*[^a-zA-Z0-9].*")) {
+            missing.add("特殊字符");
+        }
+        BusinessException.require(missing.isEmpty(), "密码要求未满足：" + String.join("、", missing));
     }
 }

@@ -5,7 +5,6 @@ import jakarta.persistence.Id;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.Column;
 import java.time.Instant;
-import java.time.LocalDate;
 import java.math.BigDecimal;
 
 @Entity
@@ -21,7 +20,9 @@ public class Settlement {
     @GeneratedValue
     private Long id;
     @Column(unique = true)
+    @jakarta.persistence.Basic(optional = false)
     private Long orderId;
+    @jakarta.persistence.Basic(optional = false)
     private Long sellerId;
     private BigDecimal grossAmount;
     private BigDecimal fee;

@@ -28,7 +28,7 @@ public class SecurityConfig {
     }
 
     @Bean
-    SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+    SecurityFilterChain securityFilterChain(HttpSecurity http, AccountAccessFilter accountAccess) throws Exception {
         http.authorizeHttpRequests(auth -> auth
                 .requestMatchers("/", "/products/*", "/sellers/*", "/login", "/register", "/recover", "/ranking", "/availability/*", "/js/**", "/css/**", "/images/**", "/error")
                 .permitAll().requestMatchers(org.springframework.http.HttpMethod.GET, "/media/*").permitAll()
@@ -36,6 +36,7 @@ public class SecurityConfig {
                 .requestMatchers("/seller/**").hasRole("SELLER").anyRequest().authenticated())
                 .formLogin(form -> form.loginPage("/login").defaultSuccessUrl("/", true).permitAll())
                 .logout(logout -> logout.logoutSuccessUrl("/"));
+        http.addFilterAfter(accountAccess, org.springframework.security.web.access.intercept.AuthorizationFilter.class);
         return http.build();
     }
 }

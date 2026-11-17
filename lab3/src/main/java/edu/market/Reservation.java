@@ -3,7 +3,6 @@ package edu.market;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.Id;
-import jakarta.persistence.Column;
 import java.time.Instant;
 
 @Entity
@@ -18,7 +17,9 @@ public class Reservation {
     @Id
     @GeneratedValue
     private Long id;
+    @jakarta.persistence.Basic(optional = false)
     private Long productId;
+    @jakarta.persistence.Basic(optional = false)
     private Long buyerId;
     private int quantity;
     private int allocated;

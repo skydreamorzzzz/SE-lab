@@ -62,6 +62,7 @@ public class ModerationService {
         lockTarget(type, target);
         if (type.equals("PRODUCT")) {
             Product product = products.locked(target);
+            product.setListingRevision(product.getListingRevision() + 1);
             product.setStatus(ProductStatus.VIOLATION);
             product.setReviewNote(reason);
         } else {

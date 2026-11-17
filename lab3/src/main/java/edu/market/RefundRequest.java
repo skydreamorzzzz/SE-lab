@@ -5,8 +5,6 @@ import jakarta.persistence.Id;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.Column;
 import java.time.Instant;
-import java.time.LocalDate;
-import java.math.BigDecimal;
 
 @Entity
 @jakarta.persistence.Table(indexes = {@jakarta.persistence.Index(name = "idx_refund_timeout", columnList = "status,createdAt")})
@@ -18,6 +16,7 @@ public class RefundRequest {
     @Id
     @GeneratedValue
     private Long id;
+    @jakarta.persistence.Basic(optional = false)
     private Long orderId;
     @Column(length = 2000)
     private String previousStatus;

@@ -1,0 +1,124 @@
+{
+  "build": "mvn package: BUILD SUCCESS",
+  "checkstyleViolations": 0,
+  "suites": [
+    {
+      "name": "edu.market.AccountTest",
+      "tests": 1,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    {
+      "name": "edu.market.AuthorizationTest",
+      "tests": 2,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    {
+      "name": "edu.market.BargainTest",
+      "tests": 2,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    {
+      "name": "edu.market.ConcurrencyTest",
+      "tests": 2,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    {
+      "name": "edu.market.FinanceTest",
+      "tests": 4,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    {
+      "name": "edu.market.IdentityMediaTest",
+      "tests": 2,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    {
+      "name": "edu.market.InsightsTest",
+      "tests": 2,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    {
+      "name": "edu.market.MarketplaceTest",
+      "tests": 9,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    {
+      "name": "edu.market.MigrationTest",
+      "tests": 1,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    {
+      "name": "edu.market.ModerationTest",
+      "tests": 2,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    {
+      "name": "edu.market.PerformanceTest",
+      "tests": 2,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    {
+      "name": "edu.market.PersonalTest",
+      "tests": 2,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    {
+      "name": "edu.market.ProductTest",
+      "tests": 2,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    {
+      "name": "edu.market.WebTest",
+      "tests": 4,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    }
+  ],
+  "totals": {
+    "tests": 37,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0
+  },
+  "sourceCount": [
+    "main: 64 Java files, 3792 nonblank non-comment lines",
+    "test: 14 Java files, 1394 nonblank non-comment lines"
+  ],
+  "performance": {
+    "products": 10000,
+    "clients": 10,
+    "requestsPerOperation": 100,
+    "listP95Ms": 84.8638,
+    "searchP95Ms": 106.3765,
+    "buyP95Ms": 96.6826,
+    "payP95Ms": 55.5212
+  },
+  "browserPassed": true
+}

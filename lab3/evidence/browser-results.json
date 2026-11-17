@@ -6,6 +6,10 @@
     "reserve/cancel/reserve again/restock/FIFO/seller confirmation/order",
     "buyer denied admin and POST without CSRF denied",
     "logout",
+    "private upload/publish media/optional fields/bargain hold/order/direct refund",
+    "return shipment/refund/cart checkout/promotion/commission settlement",
+    "favorite/follow/one-way block/unblock/report/feedback/punish/appeal/re-review/rank/privacy stats",
+    "phone proof/local SMS simulation/recovery credential reset/super admin online backup download",
     "process restart preserves accounts/order/reviews/seller reputation"
   ],
   "productUrl": "http://127.0.0.1:18080/products/1",

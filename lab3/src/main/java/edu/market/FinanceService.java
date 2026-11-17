@@ -34,13 +34,14 @@ public class FinanceService {
         Product product = lockProduct(orderId);
         PurchaseOrder order = orders.lockById(orderId).orElseThrow();
         BusinessException.require(accounts.current(username).getId().equals(order.getBuyerId()), "仅买家可申请退款");
-        BusinessException.require(order.getStatus() == OrderStatus.PAID || order.getStatus() == OrderStatus.SHIPPED,
-                "只可对已付款且未确认收货的订单申请售后");
+        BusinessException.require(order.getStatus() == OrderStatus.PAID || order.getStatus() == OrderStatus.SHIPPED
+                || order.getStatus() == OrderStatus.COMPLETED,
+                "只可对已付款的有效订单申请售后");
         text(reason);
         RefundRequest refund = new RefundRequest();
         refund.setOrderId(orderId);
         refund.setPreviousStatus(order.getStatus().name());
-        refund.setReturnRequired(order.getStatus() == OrderStatus.SHIPPED);
+        refund.setReturnRequired(order.getStatus() != OrderStatus.PAID);
         refund.setStatus("REQUESTED");
         refund.setReason(reason.strip());
         refund.setCreatedAt(Instant.now());
@@ -56,6 +57,12 @@ public class FinanceService {
         RefundRequest refund = latest(orderId);
         BusinessException.require(refund.getStatus().equals("REQUESTED"), "申请已经处理");
         text(note);
+        if (!refund.getCreatedAt().plus(Duration.ofHours(48)).isAfter(Instant.now())) {
+            refund.setDecision("48 小时未处理，系统自动同意");
+            approve(refund, order, product);
+            activities.record("SYSTEM", "ORDER", orderId, "REFUND_TIMEOUT", refund.getStatus());
+            return;
+        }
         refund.setDecision(note);
         if (approve) {
             approve(refund, order, product);
@@ -133,6 +140,11 @@ public class FinanceService {
 
     private void finish(RefundRequest refund, PurchaseOrder order, Product product) {
         refund.setStatus("REFUNDED");
+        if (refund.getPreviousStatus().equals("COMPLETED")) {
+            product.setSoldQuantity(Math.max(0, product.getSoldQuantity() - order.getQuantity()));
+            settlements.findByOrderId(order.getId()).ifPresent(s -> s.setReversed(true));
+            activities.record("SYSTEM", "ORDER", order.getId(), "SETTLEMENT_REVERSE", "REFUNDED");
+        }
         order.setStatus(OrderStatus.REFUNDED);
         product.setStock(product.getStock() + order.getQuantity());
         products.allocateStock(product);

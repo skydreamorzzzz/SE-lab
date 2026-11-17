@@ -5,7 +5,6 @@ import jakarta.persistence.Id;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.Column;
 import java.time.Instant;
-import java.time.LocalDate;
 import java.math.BigDecimal;
 
 @Entity
@@ -27,8 +26,11 @@ public class Bargain {
     @Id
     @GeneratedValue
     private Long id;
+    @jakarta.persistence.Basic(optional = false)
     private Long productId;
+    @jakarta.persistence.Basic(optional = false)
     private Long buyerId;
+    @jakarta.persistence.Basic(optional = false)
     private Long sellerId;
     private int quantity;
     private BigDecimal price;

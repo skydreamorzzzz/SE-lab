@@ -10,7 +10,8 @@ const output = path.join(root, 'target/browser-evidence');
 fs.mkdirSync(output, { recursive: true });
 const suffix = Date.now().toString(36);
 const password = 'Run!9aA' + crypto.randomBytes(12).toString('hex');
-const users = { admin: 'admin_' + suffix, seller: 'seller_' + suffix, buyer: 'buyer_' + suffix };
+const credentials = {};
+const users = { super: 'super_' + suffix, admin: 'admin_' + suffix, seller: 'seller_' + suffix, buyer: 'buyer_' + suffix };
 const url = 'http://127.0.0.1:18080';
 let app;
 let browser;
@@ -19,9 +20,11 @@ function start() {
   const java = process.env.JAVA_HOME ? path.join(process.env.JAVA_HOME, 'bin/java.exe') : 'java';
   const log = fs.openSync(path.join(output, 'application.log'), 'a');
   app = spawn(java, ['-jar', 'target/marketplace-1.0.0.jar', '--server.port=18080',
-    '--spring.datasource.url=jdbc:h2:file:./target/browser-data/market-' + suffix], {
+    '--spring.datasource.url=jdbc:h2:file:./target/browser-data/market-' + suffix + ';WRITE_DELAY=0',
+    '--market.media-dir=./target/browser-data/media-' + suffix, '--market.backup-dir=./target/browser-data/backups-' + suffix], {
     cwd: root, windowsHide: true, stdio: ['ignore', log, log],
-    env: { ...process.env, MARKET_ADMIN_USER: users.admin, MARKET_ADMIN_PASSWORD: password }
+    env: { ...process.env, MARKET_ADMIN_USER: users.admin, MARKET_ADMIN_PASSWORD: password,
+      MARKET_SUPER_ADMIN_USER: users.super, MARKET_SUPER_ADMIN_PASSWORD: password }
   });
 }
 async function ready() {
@@ -44,7 +47,7 @@ async function text(page, expected) {
 async function login(page, role) {
   await page.goto(url + '/login');
   await page.locator('[name=username]').fill(users[role]);
-  await page.locator('[name=password]').fill(password);
+  await page.locator('[name=password]').fill(credentials[role] || password);
   await page.getByRole('button', { name: '登录', exact: true }).click();
   await page.waitForURL(url + '/');
 }
@@ -56,6 +59,159 @@ async function register(page, role) {
   await page.getByRole('button', { name: '注册', exact: true }).click();
   await text(page, '注册成功');
   await login(page, role);
+}
+async function roundTwo(seller, buyer, admin) {
+  await login(buyer, 'buyer');
+  const superPage = await browser.newPage({ viewport: { width: 1280, height: 1000 } });
+  await login(superPage, 'super');
+  await seller.goto(url + '/media/upload');
+  await seller.locator('[name=file]').setInputFiles({ name: 'camera.png', mimeType: 'image/png', buffer: Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+aobEAAAAASUVORK5CYII=', 'base64') });
+  await seller.getByRole('button', { name: '上传', exact: true }).click();
+  const mediaUrl = await seller.locator('pre').innerText();
+  assert.equal((await buyer.request.get(url + mediaUrl)).status(), 400);
+  await seller.goto(url + '/seller/edit');
+  const data = { name: '第二轮综合验收商品', category: '数码电子/相机', conditionLabel: '9成新', imageUrl: mediaUrl,
+    description: '媒体、议价、售后、购物车与审核复核的真实页面验收', minPrice: '120.00', maxPrice: '150.00', reservationLimit: '8', brand: '演示品牌', modelName: 'Demo-A', usageYears: '1', originPlace: '南京', contactChannel: '站内联系', shippingAddress: '校园发货点' };
+  for (const [key, value] of Object.entries(data)) await seller.locator('[name=' + key + ']').fill(value);
+  await seller.locator('[name=negotiable]').check();
+  await seller.locator('[name=returnSupported]').check();
+  await seller.getByRole('button', { name: '保存草稿 / 修改内容' }).click();
+  let panel = seller.locator('section.panel').filter({ hasText: '第二轮综合验收商品' });
+  await panel.locator('[name=delta]').fill('3');
+  await panel.getByRole('button', { name: '调整库存', exact: true }).click();
+  await seller.locator('section.panel').filter({ hasText: '第二轮综合验收商品' }).getByRole('button', { name: '提交审核', exact: true }).click();
+  await admin.goto(url + '/admin');
+  await admin.locator('section.panel').filter({ hasText: '第二轮综合验收商品' }).getByRole('button', { name: '通过', exact: true }).click();
+  await buyer.goto(url + '/?keyword=' + encodeURIComponent('第二轮'));
+  await buyer.locator('.product').click();
+  const productUrl = buyer.url();
+  const productId = productUrl.split('/').pop();
+  assert.equal((await buyer.request.get(url + mediaUrl)).status(), 200);
+  await text(buyer, '演示品牌');
+  await buyer.locator('form[action="/bargains/propose"] [name=price]').fill('130.00');
+  await buyer.getByRole('button', { name: '提交报价', exact: true }).click();
+  await seller.goto(url + '/bargains');
+  await seller.getByRole('button', { name: '接受并锁库存', exact: true }).click();
+  await buyer.goto(url + '/bargains');
+  await buyer.getByRole('button', { name: '按议定价格下单', exact: true }).click();
+  await text(buyer, '130.00');
+  let orderUrl = buyer.url();
+  await buyer.getByRole('button', { name: '模拟支付', exact: true }).click();
+  await buyer.getByRole('link', { name: '售后申请与结算' }).click();
+  await buyer.locator('[name=note]').fill('未发货退款验收');
+  await buyer.getByRole('button', { name: '申请退款 / 退货退款', exact: true }).click();
+  const aftercareUrl = buyer.url();
+  await seller.goto(aftercareUrl);
+  await seller.locator('[name=note]').fill('同意退款');
+  await seller.getByRole('button', { name: '同意退款申请', exact: true }).click();
+  await text(seller, '已退款');
+  checks.push('private upload/publish media/optional fields/bargain hold/order/direct refund');
+  await buyer.goto(productUrl);
+  await buyer.getByRole('button', { name: '立即购买', exact: true }).click();
+  await buyer.waitForURL(/\/orders\/\d+$/);
+  orderUrl = buyer.url();
+  await buyer.getByRole('button', { name: '模拟支付', exact: true }).click();
+  await seller.goto(orderUrl);
+  await seller.getByRole('button', { name: '模拟发货', exact: true }).click();
+  await buyer.goto(orderUrl);
+  await buyer.getByRole('link', { name: '售后申请与结算' }).click();
+  await buyer.locator('[name=note]').fill('已发货退货验收');
+  await buyer.getByRole('button', { name: '申请退款 / 退货退款', exact: true }).click();
+  const returnUrl = buyer.url();
+  await seller.goto(returnUrl);
+  await seller.locator('[name=note]').fill('同意退货');
+  await seller.getByRole('button', { name: '同意退款申请', exact: true }).click();
+  await buyer.goto(returnUrl);
+  await buyer.locator('[name=note]').fill('SIM-RETURN-TRACKING');
+  await buyer.getByRole('button', { name: '提交退货物流', exact: true }).click();
+  await seller.goto(returnUrl);
+  await seller.getByRole('button', { name: '确认收到退货并退款', exact: true }).click();
+  await text(seller, '已退款');
+  await seller.screenshot({ path: path.join(output, 'round2-refund.png'), fullPage: true });
+  await superPage.goto(url + '/admin/platform');
+  await superPage.locator('[name=commission]').fill('0.05');
+  await superPage.locator('[name=promotion]').fill('0.1');
+  await superPage.getByRole('button', { name: '保存平台规则', exact: true }).click();
+  await buyer.goto(productUrl);
+  await buyer.getByRole('button', { name: '收藏商品', exact: true }).click();
+  await buyer.goto(productUrl);
+  await buyer.locator('form[action="/cart/add"] [name=quantity]').fill('2');
+  await buyer.getByRole('button', { name: '加入购物车', exact: true }).click();
+  await buyer.getByRole('button', { name: '结算此商品', exact: true }).click();
+  await text(buyer, '216.00');
+  orderUrl = buyer.url();
+  await buyer.getByRole('button', { name: '模拟支付', exact: true }).click();
+  await seller.goto(orderUrl);
+  await seller.getByRole('button', { name: '模拟发货', exact: true }).click();
+  await buyer.goto(orderUrl);
+  await buyer.getByRole('button', { name: '确认收货', exact: true }).click();
+  await buyer.getByRole('link', { name: '售后申请与结算' }).click();
+  await text(buyer, '205.20');
+  checks.push('return shipment/refund/cart checkout/promotion/commission settlement');
+  await buyer.goto(productUrl);
+  await buyer.getByRole('link', { name: '卖家主页与评价' }).click();
+  await buyer.getByRole('button', { name: '关注卖家', exact: true }).click();
+  await buyer.goto(productUrl);
+  await buyer.getByRole('link', { name: '卖家主页与评价' }).click();
+  await buyer.getByRole('button', { name: '屏蔽卖家', exact: true }).click();
+  await buyer.goto(url + '/');
+  assert.equal(await buyer.locator('.product').count(), 0);
+  await buyer.goto(url + '/personal?kind=BLOCK');
+  await buyer.getByRole('button', { name: '删除 / 取消关系', exact: true }).click();
+  await buyer.goto(url + '/moderation');
+  const reporterId = (await buyer.locator('body').innerText()).match(/我的账户编号 #(\d+)/)[1];
+  const reportForm = buyer.locator('form[action="/moderation/submit"]');
+  await reportForm.locator('[name=kind]').selectOption('REPORT');
+  await reportForm.locator('[name=target]').fill(productId);
+  await reportForm.locator('[name=reason]').fill('举报与反馈浏览器验收');
+  await reportForm.getByRole('button', { name: '提交', exact: true }).click();
+  await admin.goto(url + '/moderation');
+  await admin.locator('section.panel').filter({ hasText: 'REPORT' }).locator('[name=feedback]').fill('已核实并反馈');
+  await admin.locator('section.panel').filter({ hasText: 'REPORT' }).getByRole('button', { name: '受理举报 / 通过申诉', exact: true }).click();
+  const punish = admin.locator('form[action="/moderation/submit"]');
+  await punish.locator('[name=kind]').selectOption('PUNISH');
+  await punish.locator('[name=target]').fill(productId);
+  await punish.locator('[name=reason]').fill('模拟违规处置');
+  await punish.getByRole('button', { name: '提交', exact: true }).click();
+  await seller.goto(url + '/moderation');
+  const appeal = seller.locator('form[action="/moderation/submit"]');
+  await appeal.locator('[name=kind]').selectOption('APPEAL');
+  await appeal.locator('[name=target]').fill(productId);
+  await appeal.locator('[name=reason]').fill('商品申诉复核验收');
+  await appeal.getByRole('button', { name: '提交', exact: true }).click();
+  await admin.goto(url + '/moderation');
+  const pendingAppeal = admin.locator('section.panel').filter({ hasText: 'APPEAL' });
+  await pendingAppeal.locator('[name=feedback]').fill('申诉通过等待复审');
+  await pendingAppeal.getByRole('button', { name: '受理举报 / 通过申诉', exact: true }).click();
+  await admin.goto(url + '/admin');
+  await admin.locator('section.panel').filter({ hasText: '第二轮综合验收商品' }).getByRole('button', { name: '通过', exact: true }).click();
+  await admin.goto(url + '/admin/statistics');
+  await text(admin, '低样本合并');
+  await buyer.goto(url + '/ranking?period=day');
+  await text(buyer, '第二轮综合验收商品');
+  checks.push('favorite/follow/one-way block/unblock/report/feedback/punish/appeal/re-review/rank/privacy stats');
+  await buyer.goto(url + '/identity');
+  await buyer.locator('form[action="/identity/recovery"] [name=password]').fill(password);
+  await buyer.getByRole('button', { name: '验证并生成恢复凭证', exact: true }).click();
+  const recoveryCode = await buyer.locator('pre').innerText();
+  await buyer.locator('form[action="/identity/challenge"] [name=password]').fill(password);
+  await buyer.locator('[name=phone]').fill('13800000000');
+  await buyer.getByRole('button', { name: '本地模拟发送验证码', exact: true }).click();
+  const code = await buyer.locator('section.panel b').innerText();
+  await buyer.locator('[name=code]').fill(code);
+  await buyer.getByRole('button', { name: '核验并绑定', exact: true }).click();
+  await text(buyer, '手机号绑定成功');
+  await buyer.goto(url + '/recover');
+  await buyer.locator('[name=username]').fill(users.buyer);
+  await buyer.locator('[name=code]').fill(recoveryCode);
+  credentials.buyer = password + 'Aa1!';
+  await buyer.locator('[name=password]').fill(credentials.buyer);
+  await buyer.getByRole('button', { name: '验证并重设密码', exact: true }).click();
+  await superPage.goto(url + '/admin/platform');
+  const download = await Promise.all([superPage.waitForEvent('download'), superPage.getByRole('button', { name: '下载在线备份', exact: true }).click()]);
+  await download[0].saveAs(path.join(output, 'private-backup.zip'));
+  checks.push('phone proof/local SMS simulation/recovery credential reset/super admin online backup download');
+  await superPage.close();
 }
 async function run() {
   start();
@@ -70,6 +226,7 @@ async function run() {
   await buyer.locator('[name=displayName]').fill('浏览器验收买家');
   await buyer.locator('[name=address]').fill('南京 · 校园测试收货地址');
   await buyer.getByRole('button', { name: '保存资料' }).click();
+  for (const page of [seller, buyer, admin]) page.on('pageerror', error => console.error('Browser page error:', error.message));
   await login(admin, 'admin');
   await seller.goto(url + '/seller/edit');
   const fields = { name: '浏览器验收相机', category: '数码电子/相机', conditionLabel: '9成新', imageUrl: '/images/sample.svg', description: '真实表单联通验收，配件齐全', minPrice: '120.00', maxPrice: '150.00', reservationLimit: '5' };
@@ -87,6 +244,7 @@ async function run() {
   await buyer.locator('.product').first().click();
   const productUrl = buyer.url();
   await buyer.getByRole('button', { name: '立即购买', exact: true }).click();
+  await buyer.waitForURL(/\/orders\/\d+$/);
   await text(buyer, '待支付');
   const orderUrl = buyer.url();
   await buyer.getByRole('button', { name: '模拟支付', exact: true }).click();
@@ -127,6 +285,7 @@ async function run() {
   await buyer.getByRole('button', { name: '退出', exact: true }).click();
   await text(buyer, '登录 / 注册');
   checks.push('logout');
+  await roundTwo(seller, buyer, admin);
   await stop();
   start();
   await ready();

@@ -70,11 +70,23 @@ public class ProductService {
             if (url.startsWith("/media/")) {
                 MediaAsset asset = media.findByStoredName(url.substring(7)).orElseThrow(() -> new BusinessException("媒体不存在"));
                 BusinessException.require(asset.getOwnerId().equals(seller.getId()), "只能引用自己上传的媒体");
+                boolean isVideo = url.equals(input.getVideoUrl());
+                BusinessException.require(asset.getContentType().startsWith(isVideo ? "video/" : "image/"), "图片或视频媒体类型不匹配");
             }
         }
+        if (input.getExtraImages() != null && !input.getExtraImages().isBlank()) {
+            input.setExtraImages(String.join(" ", input.getExtraImages().strip().split("\\s+")));
+        }
+        boolean optionalChanged = !Objects.equals(product.getBrand(), input.getBrand())
+                || !Objects.equals(product.getModelName(), input.getModelName())
+                || !Objects.equals(product.getUsageYears(), input.getUsageYears())
+                || !Objects.equals(product.getOriginPlace(), input.getOriginPlace())
+                || !Objects.equals(product.getContactChannel(), input.getContactChannel())
+                || !Objects.equals(product.getShippingAddress(), input.getShippingAddress())
+                || product.getReturnSupported() != input.getReturnSupported();
         boolean mediaChanged = !Objects.equals(product.getExtraImages(), input.getExtraImages())
                 || !Objects.equals(product.getVideoUrl(), input.getVideoUrl());
-        boolean changed = mediaChanged || product.getNegotiable() != input.getNegotiable() || !Objects.equals(product.getName(), input.getName())
+        boolean changed = optionalChanged || mediaChanged || product.getNegotiable() != input.getNegotiable() || !Objects.equals(product.getName(), input.getName())
                 || !Objects.equals(product.getDescription(), input.getDescription())
                 || !Objects.equals(product.getMinPrice(), input.getMinPrice())
                 || !Objects.equals(product.getMaxPrice(), input.getMaxPrice())
@@ -163,7 +175,7 @@ public class ProductService {
         if (!isPublic(product) || sellerBanned(product)) {
             Account actor = accounts.current(username);
             BusinessException.require(actor.getId().equals(product.getSellerId())
-                    || actor.getRole().equals("ADMIN"), "无权查看未公开商品");
+                    || (product.getStatus() != ProductStatus.DRAFT && actor.getRole().equals("ADMIN")), "无权查看未公开商品");
         }
         if (username != null) {
             BusinessException.require(personal.findByOwnerIdAndKindAndTargetKey(accounts.current(username).getId(),

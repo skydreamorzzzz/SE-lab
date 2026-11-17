@@ -6,7 +6,6 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.Column;
 import java.time.Instant;
 import java.time.LocalDate;
-import java.math.BigDecimal;
 
 @Entity
 
@@ -22,6 +21,7 @@ public class ModerationCase {
     @Column(length = 2000)
     private String targetType;
     private Long targetId;
+    @jakarta.persistence.Basic(optional = false)
     private Long authorId;
     @Column(length = 2000)
     private String reason;

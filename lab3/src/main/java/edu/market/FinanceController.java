@@ -62,6 +62,12 @@ public class FinanceController {
         platform.configure(principal.getName(), commission, promotion);
         return "redirect:/admin/platform";
     }
+    @PostMapping("/admin/platform/admin-status")
+    String adminStatus(Principal principal, @RequestParam String username, @RequestParam boolean disabled) {
+        platform.adminStatus(principal.getName(), username, disabled);
+        return "redirect:/admin/platform";
+    }
+
     @PostMapping("/admin/platform/admin")
     String admin(Principal principal, @RequestParam String username, @RequestParam String password) {
         platform.createAdmin(principal.getName(), username, password);

@@ -25,8 +25,11 @@ public class PurchaseOrder {
     @Id
     @GeneratedValue
     private Long id;
+    @jakarta.persistence.Basic(optional = false)
     private Long productId;
+    @jakarta.persistence.Basic(optional = false)
     private Long buyerId;
+    @jakarta.persistence.Basic(optional = false)
     private Long sellerId;
     private String productName;
     private int quantity;

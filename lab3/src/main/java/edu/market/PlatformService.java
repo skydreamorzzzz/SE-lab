@@ -11,13 +11,15 @@ public class PlatformService {
     private final AccountRepository store;
     private final PlatformRuleRepository rules;
     private final ActivityService activities;
+    private final org.springframework.security.crypto.password.PasswordEncoder encoder;
 
     public PlatformService(AccountService accounts, AccountRepository store,
-                           PlatformRuleRepository rules, ActivityService activities) {
+                           PlatformRuleRepository rules, ActivityService activities, org.springframework.security.crypto.password.PasswordEncoder encoder) {
         this.accounts = accounts;
         this.store = store;
         this.rules = rules;
         this.activities = activities;
+        this.encoder = encoder;
     }
 
     public void requireSuper(String username) {
@@ -48,6 +50,11 @@ public class PlatformService {
         activities.record(username, "PLATFORM", 1L, "CREATE_ADMIN", name);
     }
 
-    @org.springframework.beans.factory.annotation.Autowired
-    private org.springframework.security.crypto.password.PasswordEncoder encoder;
+    public void adminStatus(String username, String target, boolean disabled) {
+        requireSuper(username);
+        Account admin = accounts.current(target);
+        BusinessException.require(admin.getRole().equals("ADMIN") && !admin.getSuperAdmin(), "只能调整普通管理员");
+        admin.setBanned(disabled);
+        activities.record(username, "ACCOUNT", admin.getId(), "ADMIN_STATUS", disabled ? "DISABLED" : "ENABLED");
+    }
 }

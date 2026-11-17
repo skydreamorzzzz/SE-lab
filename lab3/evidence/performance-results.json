@@ -1,0 +1,5 @@
+{
+  "products": 10000, "clients": 10, "requestsPerOperation": 100,
+  "listP95Ms": 84.8638, "searchP95Ms": 106.3765,
+  "buyP95Ms": 96.6826, "payP95Ms": 55.5212
+}

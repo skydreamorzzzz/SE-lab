@@ -33,6 +33,9 @@ class ConcurrencyTest {
     @Autowired
     private TransactionTemplate transaction;
 
+    @Autowired
+    private ReservationRepository reservations;
+
     @Test
     void lastItemCannotBeSoldTwiceAndFailedTransactionRollsBack() throws Exception {
         accounts.register("conbuyer", "Valid123!", "BUYER");
@@ -76,5 +79,47 @@ class ConcurrencyTest {
         }
         assertEquals(0, productStore.findById(id).orElseThrow().getStock());
         assertEquals(1, orders.count());
+    }
+    @Test
+    void concurrentReservationsCannotExceedPlanOrCreateDuplicateActiveEntries() throws Exception {
+        accounts.register("reservebuyer", "Valid123!", "BUYER");
+        accounts.register("reserveseller", "Valid123!", "SELLER");
+        accountStore.save(new Account("reserveadmin", encoder.encode("Valid123!"), "ADMIN"));
+        Product input = new Product();
+        input.setName("预约并发商品");
+        input.setCategory("学习/书籍");
+        input.setConditionLabel("9成新");
+        input.setDescription("预约总量并发验收");
+        input.setImageUrl("/images/sample.svg");
+        input.setMinPrice(BigDecimal.TEN);
+        input.setMaxPrice(BigDecimal.TEN);
+        input.setReservationLimit(5);
+        Long id = products.save("reserveseller", null, input).getId();
+        products.submit("reserveseller", id);
+        products.audit("reserveadmin", id, true, "通过");
+        CyclicBarrier start = new CyclicBarrier(10);
+        Callable<Boolean> reserve = () -> {
+            start.await(10, TimeUnit.SECONDS);
+            try {
+                trading.reserve("reservebuyer", id, 1);
+                return true;
+            } catch (BusinessException expected) {
+                return false;
+            }
+        };
+        int succeeded = 0;
+        try (var executor = Executors.newFixedThreadPool(10)) {
+            var futures = new java.util.ArrayList<java.util.concurrent.Future<Boolean>>();
+            for (int i = 0; i < 10; i++) {
+                futures.add(executor.submit(reserve));
+            }
+            for (var future : futures) {
+                succeeded += future.get(20, TimeUnit.SECONDS) ? 1 : 0;
+            }
+        }
+        assertEquals(5, succeeded);
+        var queue = reservations.findByProductIdAndCancelledFalseAndConfirmedFalseOrderByIdAsc(id);
+        assertEquals(1, queue.size());
+        assertEquals(5, queue.getFirst().getQuantity());
     }
 }

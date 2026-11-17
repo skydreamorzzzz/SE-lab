@@ -41,6 +41,7 @@ public class Product {
     @Id
     @GeneratedValue
     private Long id;
+    @jakarta.persistence.Basic(optional = false)
     private Long sellerId;
     private String name;
     private String category;
