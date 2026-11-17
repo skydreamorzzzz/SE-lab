@@ -1,0 +1,26 @@
+package edu.market;
+
+import java.time.Duration;
+import java.time.Instant;
+import org.springframework.scheduling.annotation.Scheduled;
+import org.springframework.stereotype.Component;
+
+@Component
+public class OrderMaintenance {
+    private final PurchaseOrderRepository orders;
+    private final TradingService trading;
+
+    public OrderMaintenance(PurchaseOrderRepository orders, TradingService trading) {
+        this.orders = orders;
+        this.trading = trading;
+    }
+
+    @Scheduled(fixedDelay = 30000)
+    public void sweep() {
+        Instant now = Instant.now();
+        orders.findByStatusAndCreatedAtBefore(OrderStatus.PENDING_PAYMENT, now.minus(Duration.ofMinutes(15)))
+                .forEach(order -> trading.expire(order.getId(), now));
+        orders.findByStatusAndSignedAtBefore(OrderStatus.SHIPPED, now.minus(Duration.ofDays(7)))
+                .forEach(order -> trading.expire(order.getId(), now));
+    }
+}
