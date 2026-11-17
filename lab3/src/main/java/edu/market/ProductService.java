@@ -58,13 +58,17 @@ public class ProductService {
         }
         BusinessException.require(input.getDescription() == null || input.getDescription().length() <= 2000,
                 "描述不超过 2000 字");
-        boolean changed = !Objects.equals(product.getName(), input.getName())
+        boolean changed = product.getNegotiable() != input.getNegotiable() || !Objects.equals(product.getName(), input.getName())
                 || !Objects.equals(product.getDescription(), input.getDescription())
                 || !Objects.equals(product.getMinPrice(), input.getMinPrice())
                 || !Objects.equals(product.getMaxPrice(), input.getMaxPrice())
                 || !Objects.equals(product.getImageUrl(), input.getImageUrl())
                 || !Objects.equals(product.getCategory(), input.getCategory())
                 || !Objects.equals(product.getConditionLabel(), input.getConditionLabel());
+        product.setNegotiable(input.getNegotiable());
+        if (changed) {
+            product.setListingRevision(product.getListingRevision() + 1);
+        }
         product.setName(input.getName());
         product.setCategory(input.getCategory());
         product.setConditionLabel(input.getConditionLabel());
@@ -119,6 +123,7 @@ public class ProductService {
         Product product = locked(id);
         owner(accounts.current(username), product);
         BusinessException.require(isPublic(product), "仅公开商品可下架");
+        product.setListingRevision(product.getListingRevision() + 1);
         product.setStatus(ProductStatus.OFF_SHELF);
         product.setReviewNote("卖家主动下架，再发布需审核");
         activities.record(username, "PRODUCT", id, "WITHDRAW", product.getStatus().name());

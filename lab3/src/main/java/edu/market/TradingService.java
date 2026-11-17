@@ -190,6 +190,15 @@ public class TradingService {
         return order;
     }
 
+    public PurchaseOrder fromBargain(String username, Product product, int quantity, BigDecimal price, Long bargainId) {
+        Account buyer = buyer(username);
+        requireAddress(buyer);
+        PurchaseOrder order = newOrder(buyer, product, quantity, "bargain:" + bargainId);
+        order.setUnitPrice(price);
+        order.setTotal(price.multiply(BigDecimal.valueOf(quantity)));
+        return order;
+    }
+
     private PurchaseOrder newOrder(Account buyer, Product product, int quantity, String requestKey) {
         PurchaseOrder order = new PurchaseOrder();
         order.setProductId(product.getId());

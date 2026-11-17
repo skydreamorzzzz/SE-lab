@@ -12,5 +12,6 @@
 <label>最低售价<input type="number" name="minPrice" step="0.01" min="0.01" th:value="${product.minPrice}"></label>
 <label>最高售价<input type="number" name="maxPrice" step="0.01" min="0.01" th:value="${product.maxPrice}"></label>
 <label>计划预约总量<input type="number" name="reservationLimit" min="0" th:value="${product.reservationLimit}"></label>
-<small>允许保存不完整草稿；提交审核前校验完整性。库存请在商品管理中单独调整。</small><button>保存草稿 / 修改内容</button></form>
+<small>允许保存不完整草稿；提交审核前校验完整性。库存请在商品管理中单独调整。</small><label>支持议价<input type="checkbox" name="negotiable" value="true" th:checked="${product.negotiable}"></label><button>保存草稿 / 修改内容</button></form>
+<label>议价设置（关键字段修改需复审）</label>
 </main></div></body></html>

@@ -10,6 +10,10 @@ import jakarta.persistence.EnumType;
 
 @Entity
 public class Product {
+    @Column(nullable = false, columnDefinition = "boolean default false")
+    private boolean negotiable;
+    @Column(nullable = false, columnDefinition = "bigint default 0")
+    private long listingRevision;
     @Id
     @GeneratedValue
     private Long id;
@@ -126,5 +130,21 @@ public class Product {
 
     public void setReviewNote(String value) {
         reviewNote = value;
+    }
+
+    public boolean getNegotiable() {
+        return negotiable;
+    }
+
+    public void setNegotiable(boolean value) {
+        negotiable = value;
+    }
+
+    public long getListingRevision() {
+        return listingRevision;
+    }
+
+    public void setListingRevision(long value) {
+        listingRevision = value;
     }
 }
