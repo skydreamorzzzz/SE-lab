@@ -20,3 +20,5 @@
 
 - 交付整理：实验三文本统一 UTF-8/LF；原仓库 .gitattributes 的 * -text 导致早期脚本输出保留 CRLF，本次仅规范化实验三文件。
 - 远程复核：origin/main 仍为 5db534a，lab3-mvp 远程分支尚不存在；将使用普通 push 创建同名分支，不合并或覆盖 main。
+
+- 推送结果：四个模块提交 8eed9f6、db585e3、ec0482a、177fc0f 已普通推送到原仓库 origin/lab3-mvp，建立跟踪关系；main 未修改。本条为推送完成后的事实补记。
