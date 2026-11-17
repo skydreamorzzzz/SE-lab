@@ -48,3 +48,9 @@
 - 交接补充：后续已收货退货退款与结算冲正已经实现，替代本轮早期仅允许收货前售后的临时范围；原始实验一/二文件保持原样，实验报告仍由本人独立撰写。
 
 - 最终推送事实：第二轮7条实现/验证提交（8949664至d08daf2）已统一普通推送到原仓库origin/main；远程与本地代码提交均为d08daf2cf75b0c7e3ade5b66728bea6be9bd8764，远程仅main，本地仅main且工作区干净。实验一requirements.md/chat.txt/.gitattributes与5db534a相比无改动。随后仅补记本条交付事实。
+
+## 启动脚本兼容性修复
+
+- 用户在Windows PowerShell 5.1运行run-local.ps1出现中文乱码和字符串未终止。复现确认：无BOM UTF-8在该版本按ANSI解码；同时该版本无Read-Host -MaskInput。此前只用PowerShell 7解析检查漏测此差异。
+- 修复：含中文启动脚本保存为UTF-8 BOM；用Read-Host -AsSecureString安全输入，临时转换给子进程后清零BSTR并释放SecureString。保留原有用户名/密码环境变量及超级管理员入口。
+- 验证：Windows PowerShell 5.1与PowerShell 7的文件解析均通过；新增scripts/test-launcher.cjs，以独立H2文件、随机凭据覆盖两个版本各自普通管理员/超级管理员的实际启动和HTTP登录，共4场景通过。原业务数据库未改动，凭据未写入记录。结果见evidence/launcher-compatibility.json。

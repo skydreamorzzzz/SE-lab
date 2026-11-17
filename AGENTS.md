@@ -58,3 +58,6 @@
 - 实验三报告由学生本人独立撰写，AI 仅辅助软件开发、测试及技术问题分析。
 
 本文件只规定项目长期背景与基本约束。具体开发任务、功能优先级和验收标准以当前用户指令为准。
+## Windows 启动脚本兼容性
+
+包含中文的 PowerShell 脚本需保留 UTF-8 BOM，以兼容 Windows PowerShell 5.1；密码输入使用 `Read-Host -AsSecureString`，不使用仅新版支持的 `-MaskInput`。修改启动脚本后需在 Windows PowerShell 5.1 实际验证，不能只用 PowerShell 7 语法检查。

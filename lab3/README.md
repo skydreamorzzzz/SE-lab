@@ -11,6 +11,8 @@ cd E:\lab3\implementation\lab3
 .\run-local.ps1
 ```
 
+支持 Windows PowerShell 5.1 与 PowerShell 7。`run-local.ps1` 含中文提示，须保留 UTF-8 BOM；密码使用兼容两者的安全输入。
+
 访问 http://localhost:8080 。本机隔离安装的 JDK/Maven 位于 `E:\lab3\.tools`，启动脚本会使用它们。其他电脑配置 Java 21 和 Maven 后可直接执行 `mvn test`、`mvn package`、`java -jar target/marketplace-1.0.0.jar`。
 
 普通买卖账户在页面注册。首次管理员启动时由脚本询问用户名与密码，不保存明文；已存在账户不会被覆盖。超级管理员是 ADMIN 角色的额外权限属性，可首次执行：
@@ -60,6 +62,8 @@ node scripts/browser-smoke.cjs
 ```
 
 需 Chrome（可设置 `CHROME_PATH`）及 Java（可设置 `JAVA_HOME`）。脚本在18080端口启动独立文件数据库，生成随机验收账号，执行两轮完整页面流程及进程重启恢复；结果和截图在 `target/browser-evidence`。其中备份含测试账号与资料，留在 target，不提交。仓库 `evidence/` 只保留经过挑选的开发测试结果和截图。
+
+启动脚本回归：`node scripts/test-launcher.cjs` 会使用 Windows PowerShell 5.1，在隔离数据库上验证普通管理员与超级管理员的安全密码输入、实际启动和登录。设置 `POWERSHELL7_PATH` 可追加 PowerShell 7 场景；不修改系统执行策略。
 
 源码统计：`python scripts/count-source.py`，按非空、非注释Java物理行统计，保留字符串中的URL，包含大括号；分别列主代码与测试，不计HTML/CSS/JS及构建产物。
 
